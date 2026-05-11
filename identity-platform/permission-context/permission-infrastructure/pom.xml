@@ -1,16 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.personal</groupId>
         <artifactId>permission-context</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>permission-infrastructure</artifactId>
     <packaging>jar</packaging>
-
     <dependencies>
         <dependency>
             <groupId>com.personal</groupId>
@@ -20,7 +17,14 @@
             <groupId>com.personal</groupId>
             <artifactId>permission-domain</artifactId>
         </dependency>
-
+        <!--
+                    platform-shared-jpa: BaseJpaAuditEntity for JPA entities here.
+                    This is the ONLY layer that should depend on platform-shared-jpa.
+                 -->
+        <dependency>
+            <groupId>com.personal</groupId>
+            <artifactId>platform-shared-jpa</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
@@ -33,12 +37,10 @@
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

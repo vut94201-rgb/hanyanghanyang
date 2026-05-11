@@ -1,16 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.personal</groupId>
         <artifactId>auth-context</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>auth-infrastructure</artifactId>
     <packaging>jar</packaging>
-
     <dependencies>
         <dependency>
             <groupId>com.personal</groupId>
@@ -20,8 +17,15 @@
             <groupId>com.personal</groupId>
             <artifactId>auth-domain</artifactId>
         </dependency>
-
-        <!-- Spring Data JPA -->
+        <!--
+                    platform-shared-jpa: BaseJpaAuditEntity for JPA entities here.
+                    This is the ONLY layer that should depend on platform-shared-jpa.
+                 -->
+        <dependency>
+            <groupId>com.personal</groupId>
+            <artifactId>platform-shared-jpa</artifactId>
+        </dependency>
+        <!--  Spring Data JPA  -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
@@ -34,25 +38,21 @@
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
-
-        <!-- Spring Data Redis -->
+        <!--  Spring Data Redis  -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
         </dependency>
-
-        <!-- Spring Security crypto (cho BCryptPasswordEncoder) -->
+        <!--  Spring Security crypto (cho BCryptPasswordEncoder)  -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
-
-        <!-- MapStruct -->
+        <!--  MapStruct  -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

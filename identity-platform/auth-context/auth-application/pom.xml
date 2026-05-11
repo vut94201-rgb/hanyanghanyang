@@ -1,27 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.personal</groupId>
         <artifactId>auth-context</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>auth-application</artifactId>
     <packaging>jar</packaging>
-
     <dependencies>
         <dependency>
             <groupId>com.personal</groupId>
             <artifactId>auth-domain</artifactId>
         </dependency>
+        <!--
+                    platform-shared (pure Java) for BusinessException, ErrorCode, Result.
+                    DO NOT add platform-shared-jpa here — application layer
+                    must not know about JPA.
+                 -->
         <dependency>
             <groupId>com.personal</groupId>
             <artifactId>platform-shared</artifactId>
         </dependency>
-
-        <!-- Spring core, KHÔNG phải Spring Boot starter -->
+        <!--  Spring core, KHÔNG phải Spring Boot starter  -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -30,7 +30,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

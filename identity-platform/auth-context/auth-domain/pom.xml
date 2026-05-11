@@ -1,17 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.personal</groupId>
         <artifactId>auth-context</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>auth-domain</artifactId>
     <packaging>jar</packaging>
-
     <dependencies>
+        <!--
+                    platform-shared is now pure Java (no Spring, no JPA).
+                    Safe for domain to depend on for BusinessException, ErrorCode, Result.
+                    DO NOT add platform-shared-jpa here — domain must stay pure.
+                 -->
         <dependency>
             <groupId>com.personal</groupId>
             <artifactId>platform-shared</artifactId>
@@ -21,6 +22,5 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- KHÔNG có Spring -->
     </dependencies>
 </project>

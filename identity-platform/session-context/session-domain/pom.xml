@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -9,6 +8,11 @@
     <artifactId>session-domain</artifactId>
     <packaging>jar</packaging>
     <dependencies>
+        <!--
+                    platform-shared is now pure Java (no Spring, no JPA).
+                    Safe for domain to depend on for BusinessException, ErrorCode, Result.
+                    DO NOT add platform-shared-jpa here — domain must stay pure.
+                 -->
         <dependency>
             <groupId>com.personal</groupId>
             <artifactId>platform-shared</artifactId>

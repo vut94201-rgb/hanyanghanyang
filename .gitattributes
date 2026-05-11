@@ -1,2 +1,7 @@
-.java, .xml, .yml, .sh  -> LF
-.cmd, .bat              -> CRLF
+*.java text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf

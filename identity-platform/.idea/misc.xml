@@ -19,6 +19,7 @@
         <option value="$PROJECT_DIR$/session-context/session-infrastructure/pom.xml" />
         <option value="$PROJECT_DIR$/session-context/session-api/pom.xml" />
         <option value="$PROJECT_DIR$/platform-boostrap/pom.xml" />
+        <option value="$PROJECT_DIR$/platform-shared-jpa/pom.xml" />
       </list>
     </option>
   </component>

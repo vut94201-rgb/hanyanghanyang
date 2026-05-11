@@ -24,6 +24,8 @@
     <file url="file://$PROJECT_DIR$/platform-boostrap/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-contracts/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-contracts/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/platform-shared-jpa/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/platform-shared-jpa/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-shared/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-shared/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/session-context/session-api/src/main/java" charset="UTF-8" />
