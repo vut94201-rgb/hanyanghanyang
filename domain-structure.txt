@@ -1,0 +1,271 @@
+sk-ant-api03-C8ce14xYWPE0GG4gdMwyLDyfjUG0j2LkuUr4liQhxTTwTcZNQoy3SFqsf3bbYk0NeCGXZi7vQYz1yJPXPLdIxQ
+
+
+identity-service/
+│
+├── pom.xml (hoặc build.gradle)
+├── README.md
+│
+└── src/
+    ├── main/
+    │   ├── java/com/personal/identityservice/
+    │   │
+    │   │   ├── IdentityServiceApplication.java
+    │   │
+    │   │   │
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │  AUTH DOMAIN — đăng ký, đăng nhập, đổi mật khẩu
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │
+    │   │   ├── auth/
+    │   │   │   ├── api/
+    │   │   │   │   ├── controller/
+    │   │   │   │   │   └── AuthController.java
+    │   │   │   │   └── dto/
+    │   │   │   │       ├── request/
+    │   │   │   │       │   ├── RegisterRequest.java
+    │   │   │   │       │   ├── LoginRequest.java
+    │   │   │   │       │   ├── ChangePasswordRequest.java
+    │   │   │   │       │   ├── ForgotPasswordRequest.java
+    │   │   │   │       │   ├── ResetPasswordRequest.java
+    │   │   │   │       │   └── RefreshTokenRequest.java
+    │   │   │   │       └── response/
+    │   │   │   │           ├── AuthResponse.java
+    │   │   │   │           └── UserProfileResponse.java
+    │   │   │   │
+    │   │   │   ├── application/
+    │   │   │   │   ├── service/
+    │   │   │   │   │   ├── AuthService.java                  (interface)
+    │   │   │   │   │   ├── AuthServiceImpl.java
+    │   │   │   │   │   ├── PasswordService.java
+    │   │   │   │   │   └── OtpService.java
+    │   │   │   │   ├── event/
+    │   │   │   │   │   ├── UserRegisteredEvent.java
+    │   │   │   │   │   ├── PasswordChangedEvent.java
+    │   │   │   │   │   ├── UserLockedEvent.java
+    │   │   │   │   │   └── AuthEventPublisher.java
+    │   │   │   │   └── mapper/
+    │   │   │   │       └── AuthMapper.java                   (MapStruct)
+    │   │   │   │
+    │   │   │   ├── domain/
+    │   │   │   │   ├── entity/
+    │   │   │   │   │   └── User.java
+    │   │   │   │   ├── enums/
+    │   │   │   │   │   ├── UserStatus.java
+    │   │   │   │   │   ├── AuthProvider.java
+    │   │   │   │   │   └── Gender.java
+    │   │   │   │   └── repository/
+    │   │   │   │       └── UserRepository.java
+    │   │   │   │
+    │   │   │   └── infrastructure/
+    │   │   │       └── redis/
+    │   │   │           ├── LoginAttemptRedisRepo.java
+    │   │   │           └── OtpRedisRepository.java
+    │   │   │
+    │   │   │
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │  TOKEN DOMAIN — refresh token, blacklist
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │
+    │   │   ├── token/
+    │   │   │   ├── api/
+    │   │   │   │   └── controller/
+    │   │   │   │       └── TokenController.java              (admin: revoke tokens)
+    │   │   │   │
+    │   │   │   ├── application/
+    │   │   │   │   ├── service/
+    │   │   │   │   │   ├── TokenService.java
+    │   │   │   │   │   ├── TokenServiceImpl.java
+    │   │   │   │   │   ├── JwtTokenProvider.java
+    │   │   │   │   │   └── TokenBlacklistService.java
+    │   │   │   │   └── listener/
+    │   │   │   │       └── TokenEventListener.java           (lắng nghe PasswordChangedEvent)
+    │   │   │   │
+    │   │   │   ├── domain/
+    │   │   │   │   ├── entity/
+    │   │   │   │   │   └── RefreshToken.java
+    │   │   │   │   ├── enums/
+    │   │   │   │   │   └── TokenStatus.java
+    │   │   │   │   └── repository/
+    │   │   │   │       └── RefreshTokenRepository.java
+    │   │   │   │
+    │   │   │   └── infrastructure/
+    │   │   │       └── redis/
+    │   │   │           └── AccessTokenBlacklistRedisRepo.java
+    │   │   │
+    │   │   │
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │  SESSION DOMAIN — quản lý session, lịch sử
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │
+    │   │   ├── session/
+    │   │   │   ├── api/
+    │   │   │   │   ├── controller/
+    │   │   │   │   │   └── SessionController.java            (xem session active, logout device)
+    │   │   │   │   └── dto/
+    │   │   │   │       └── response/
+    │   │   │   │           └── SessionResponse.java
+    │   │   │   │
+    │   │   │   ├── application/
+    │   │   │   │   ├── service/
+    │   │   │   │   │   ├── SessionService.java
+    │   │   │   │   │   └── SessionServiceImpl.java
+    │   │   │   │   └── listener/
+    │   │   │   │       └── SessionEventListener.java         (revoke session khi đổi password)
+    │   │   │   │
+    │   │   │   ├── domain/
+    │   │   │   │   ├── entity/
+    │   │   │   │   │   └── UserSession.java
+    │   │   │   │   ├── enums/
+    │   │   │   │   │   └── SessionStatus.java
+    │   │   │   │   └── repository/
+    │   │   │   │       └── UserSessionRepository.java
+    │   │   │   │
+    │   │   │   └── infrastructure/
+    │   │   │       └── redis/
+    │   │   │           └── ActiveSessionRedisRepo.java       (cache active session)
+    │   │   │
+    │   │   │
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │  PERMISSION DOMAIN — RBAC: role, permission
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │
+    │   │   ├── permission/
+    │   │   │   ├── api/
+    │   │   │   │   ├── controller/
+    │   │   │   │   │   ├── RoleController.java
+    │   │   │   │   │   ├── PermissionController.java
+    │   │   │   │   │   └── UserRoleController.java           (gán/thu hồi role cho user)
+    │   │   │   │   └── dto/
+    │   │   │   │       ├── request/
+    │   │   │   │       │   ├── CreateRoleRequest.java
+    │   │   │   │       │   ├── AssignRoleRequest.java
+    │   │   │   │       │   └── AssignPermissionRequest.java
+    │   │   │   │       └── response/
+    │   │   │   │           ├── RoleResponse.java
+    │   │   │   │           └── PermissionResponse.java
+    │   │   │   │
+    │   │   │   ├── application/
+    │   │   │   │   ├── service/
+    │   │   │   │   │   ├── RoleService.java
+    │   │   │   │   │   ├── PermissionService.java
+    │   │   │   │   │   ├── UserRoleService.java
+    │   │   │   │   │   ├── UserPermissionService.java
+    │   │   │   │   │   └── PermissionResolver.java           (resolve effective permission của 1 user)
+    │   │   │   │   └── mapper/
+    │   │   │   │       └── PermissionMapper.java
+    │   │   │   │
+    │   │   │   └── domain/
+    │   │   │       ├── entity/
+    │   │   │       │   ├── Role.java
+    │   │   │       │   ├── Permission.java
+    │   │   │       │   ├── UserRole.java                     (join: user ↔ role + audit)
+    │   │   │       │   ├── RolePermission.java               (join: role ↔ permission)
+    │   │   │       │   └── UserPermission.java               (join: user ↔ permission trực tiếp)
+    │   │   │       └── repository/
+    │   │   │           ├── RoleRepository.java
+    │   │   │           ├── PermissionRepository.java
+    │   │   │           ├── UserRoleRepository.java
+    │   │   │           ├── RolePermissionRepository.java
+    │   │   │           └── UserPermissionRepository.java
+    │   │   │
+    │   │   │
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │  USER DOMAIN — quản lý profile user (CRUD admin)
+    │   │   ├── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │   │  (tách ra khỏi auth/ vì auth/ chỉ lo authentication)
+    │   │   │
+    │   │   ├── user/
+    │   │   │   ├── api/
+    │   │   │   │   ├── controller/
+    │   │   │   │   │   ├── UserController.java               (admin CRUD user)
+    │   │   │   │   │   └── ProfileController.java            (user tự update profile)
+    │   │   │   │   └── dto/
+    │   │   │   │       ├── request/
+    │   │   │   │       │   ├── UpdateProfileRequest.java
+    │   │   │   │       │   └── CreateUserRequest.java
+    │   │   │   │       └── response/
+    │   │   │   │           └── UserDetailResponse.java
+    │   │   │   │
+    │   │   │   └── application/
+    │   │   │       └── service/
+    │   │   │           ├── UserService.java
+    │   │   │           └── ProfileService.java
+    │   │   │
+    │   │   │
+    │   │   └── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │       SHARED — base class + security + utility
+    │   │     ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+    │   │
+    │   │       shared/
+    │   │       │
+    │   │       ├── base/
+    │   │       │   ├── BaseAuditEntity.java
+    │   │       │   ├── BaseController.java                   (ok(), created(), noContent()...)
+    │   │       │   └── BaseService.java                      (nếu cần)
+    │   │       │
+    │   │       ├── security/
+    │   │       │   ├── UserPrincipal.java
+    │   │       │   ├── CustomUserDetailService.java          (import auth/ + permission/)
+    │   │       │   ├── SecurityUtils.java
+    │   │       │   ├── JwtAuthFilter.java
+    │   │       │   ├── PermissionEvaluator.java
+    │   │       │   └── SecurityConstants.java
+    │   │       │
+    │   │       ├── config/
+    │   │       │   ├── SecurityConfig.java
+    │   │       │   ├── JpaAuditingConfig.java
+    │   │       │   ├── RedisConfig.java
+    │   │       │   ├── JacksonConfig.java
+    │   │       │   ├── OpenApiConfig.java                    (Swagger)
+    │   │       │   ├── AsyncConfig.java
+    │   │       │   └── CorsConfig.java
+    │   │       │
+    │   │       ├── exception/
+    │   │       │   ├── IdentityException.java                (business exception)
+    │   │       │   ├── ErrorCode.java                        (enum: error codes)
+    │   │       │   ├── GlobalExceptionHandler.java           (@RestControllerAdvice)
+    │   │       │   └── ApiErrorResponse.java
+    │   │       │
+    │   │       ├── response/
+    │   │       │   ├── ApiResponse.java                      (wrapper response chung)
+    │   │       │   └── PageResponse.java
+    │   │       │
+    │   │       ├── util/
+    │   │       │   ├── RequestUtils.java                     (extract IP, user agent)
+    │   │       │   ├── HashUtils.java                        (SHA-256 hash token)
+    │   │       │   ├── DateTimeUtils.java
+    │   │       │   └── ValidationUtils.java
+    │   │       │
+    │   │       └── constant/
+    │   │           ├── AppConstants.java
+    │   │           └── CacheNames.java
+    │   │
+    │   └── resources/
+    │       ├── application.yml
+    │       ├── application-dev.yml
+    │       ├── application-prod.yml
+    │       ├── db/migration/                                 (Flyway)
+    │       │   ├── V1__init_schema.sql
+    │       │   ├── V2__create_user_table.sql
+    │       │   ├── V3__create_role_permission.sql
+    │       │   ├── V4__create_user_role.sql
+    │       │   ├── V5__create_token_session.sql
+    │       │   └── V6__seed_default_roles.sql
+    │       ├── i18n/
+    │       │   ├── messages_en.properties
+    │       │   └── messages_vi.properties
+    │       └── logback-spring.xml
+    │
+    └── test/
+        └── java/com/personal/identityservice/
+            ├── auth/
+            │   ├── AuthServiceTest.java
+            │   └── AuthControllerIntegrationTest.java
+            ├── token/
+            │   └── TokenServiceTest.java
+            ├── session/
+            │   └── SessionServiceTest.java
+            └── permission/
+                ├── RoleServiceTest.java
+                └── PermissionResolverTest.java
