@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.personal</groupId>
+        <artifactId>identity-platform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>auth-context</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Auth Context</name>
+    <description>Bounded context for authentication</description>
+
+    <modules>
+        <module>auth-domain</module>
+        <module>auth-application</module>
+        <module>auth-infrastructure</module>
+        <module>auth-api</module>
+    </modules>
+</project>

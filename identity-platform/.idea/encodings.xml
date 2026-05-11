@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/auth-context/auth-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/auth-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/auth-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/auth-application/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/auth-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/auth-domain/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/auth-infrastructure/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/auth-infrastructure/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/auth-context/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/permission-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/permission-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/permission-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/permission-application/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/permission-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/permission-domain/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/permission-infrastructure/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/permission-infrastructure/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/permission-context/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/platform-boostrap/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/platform-contracts/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/platform-contracts/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/platform-shared/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/platform-shared/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/session-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/session-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/session-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/session-application/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/session-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/session-domain/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/session-infrastructure/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/session-infrastructure/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/session-context/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/demotoken-applicationapplication/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/token-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/token-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/token-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/token-application/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/token-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/token-domain/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/token-infrastructure/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-context/token-infrastructure/src/main/resources" charset="UTF-8" />
+    <file url="file://$USER_HOME$/src/main/java" charset="UTF-8" />
+    <file url="file://$USER_HOME$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

@@ -1,0 +1,2 @@
+.java, .xml, .yml, .sh  -> LF
+.cmd, .bat              -> CRLF

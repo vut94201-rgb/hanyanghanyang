@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/auth-context/auth-application/pom.xml" />
+        <option value="$PROJECT_DIR$/auth-context/auth-infrastructure/pom.xml" />
+        <option value="$PROJECT_DIR$/auth-context/auth-api/pom.xml" />
+        <option value="$PROJECT_DIR$/permission-context/permission-application/pom.xml" />
+        <option value="$PROJECT_DIR$/permission-context/permission-infrastructure/pom.xml" />
+        <option value="$PROJECT_DIR$/permission-context/permission-api/pom.xml" />
+        <option value="$PROJECT_DIR$/token-context/demotoken-applicationapplication/pom.xml" />
+        <option value="$PROJECT_DIR$/token-context/token-application/pom.xml" />
+        <option value="$PROJECT_DIR$/token-context/token-infrastructure/pom.xml" />
+        <option value="$PROJECT_DIR$/token-context/token-api/pom.xml" />
+        <option value="$PROJECT_DIR$/session-context/session-application/pom.xml" />
+        <option value="$PROJECT_DIR$/session-context/session-infrastructure/pom.xml" />
+        <option value="$PROJECT_DIR$/session-context/session-api/pom.xml" />
+        <option value="$PROJECT_DIR$/platform-boostrap/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="21" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

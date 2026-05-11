@@ -314,3 +314,25 @@ identity-platform/
     └── src/main/
         ├── java/.../IdentityServiceApplication.java
         └── resources/application.yml
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+identity-platform/
+│
+├── platform-shared/              ← Pure Java (không Spring)
+├── platform-contracts/           ← Pure Java (không Spring)
+│
+├── auth-context/
+│   ├── auth-domain/              ← Pure Java (không Spring)
+│   ├── auth-application/         ← Spring module (có Spring, không boot)
+│   ├── auth-infrastructure/      ← Spring module
+│   └── auth-api/                 ← Spring module
+│
+├── permission-context/
+│   ├── permission-domain/        ← Pure Java
+│   ├── permission-application/   ← Spring module
+│   ├── permission-infrastructure/← Spring module
+│   └── permission-api/           ← Spring module
+│
+├── token-context/                ← tương tự
+├── session-context/              ← tương tự
+│
+└── identity-bootstrap/           ← ⭐ DUY NHẤT là Spring Boot module

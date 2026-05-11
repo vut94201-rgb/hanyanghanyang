@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.personal</groupId>
+        <artifactId>identity-platform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>session-context</artifactId>
+    <packaging>pom</packaging>
+    <name>Session Context</name>
+    <modules>
+        <module>session-domain</module>
+        <module>session-application</module>
+        <module>session-infrastructure</module>
+        <module>session-api</module>
+    </modules>
+</project>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.personal</groupId>
+        <artifactId>identity-platform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>token-context</artifactId>
+    <packaging>pom</packaging>
+    <name>Token Context</name>
+    <modules>
+        <module>token-domain</module>
+        <module>token-application</module>
+        <module>token-infrastructure</module>
+        <module>token-api</module>
+        <module>token-domain</module>
+    </modules>
+</project>
