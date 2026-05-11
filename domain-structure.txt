@@ -269,3 +269,48 @@ identity-service/
             └── permission/
                 ├── RoleServiceTest.java
                 └── PermissionResolverTest.java
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+================================================================================================================================================================================================================================
+identity-platform/
+├── pom.xml
+│
+├── platform-shared/                           ← shared kernel
+│   ├── pom.xml
+│   └── src/main/java/.../shared/
+│       ├── base/BaseAuditEntity.java
+│       ├── exception/
+│       └── util/
+│
+├── auth-context/                              ← Bounded Context: Authentication
+│   ├── pom.xml
+│   ├── auth-domain/
+│   ├── auth-application/
+│   ├── auth-infrastructure/
+│   └── auth-api/
+│
+├── permission-context/                        ← Bounded Context: Authorization
+│   ├── pom.xml
+│   ├── permission-domain/
+│   ├── permission-application/
+│   ├── permission-infrastructure/
+│   └── permission-api/
+│
+├── token-context/                             ← Bounded Context: Token Management
+│   ├── pom.xml
+│   ├── token-domain/
+│   ├── token-application/
+│   ├── token-infrastructure/
+│   └── token-api/
+│
+├── session-context/                           ← Bounded Context: Session Management
+│   ├── pom.xml
+│   ├── session-domain/
+│   ├── session-application/
+│   ├── session-infrastructure/
+│   └── session-api/
+│
+└── identity-bootstrap/                        ← lắp ráp tất cả context
+    ├── pom.xml
+    └── src/main/
+        ├── java/.../IdentityServiceApplication.java
+        └── resources/application.yml
