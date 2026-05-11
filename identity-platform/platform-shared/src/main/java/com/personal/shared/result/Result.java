@@ -1,5 +1,6 @@
 package com.personal.shared.result;
 
+import com.personal.shared.exception.BusinessException;
 import com.personal.shared.exception.ErrorCode;
 
 import java.util.NoSuchElementException;
@@ -12,7 +13,7 @@ import java.util.function.Function;
  *
  * <p>Use this when you want the failure case to be visible in the type signature
  * instead of relying on exceptions. For genuinely exceptional cases, throw
- * {@link com.personal.shared.exception.BusinessException} instead.
+ * {@link BusinessException} instead.
  *
  * <p>Sealed so consumers can pattern-match exhaustively (Java 21):
  * <pre>{@code
