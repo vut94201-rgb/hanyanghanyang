@@ -11,6 +11,10 @@
     <file url="file://$PROJECT_DIR$/auth-context/auth-infrastructure/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/auth-context/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/auth-context/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/identity-boostrap/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/identity-boostrap/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/identity-bootstrap/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/identity-bootstrap/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/permission-context/permission-api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/permission-context/permission-api/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/permission-context/permission-application/src/main/java" charset="UTF-8" />

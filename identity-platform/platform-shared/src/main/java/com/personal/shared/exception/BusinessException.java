@@ -7,7 +7,7 @@ public class BusinessException extends RuntimeException {
     private final ErrorCode errorCode;
 
     public BusinessException(ErrorCode errorCode) {
-        super(errorCode.message());
+        super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
 
@@ -22,7 +22,7 @@ public class BusinessException extends RuntimeException {
     }
 
     public BusinessException(ErrorCode errorCode, Throwable cause) {
-        super(errorCode.message(), cause);
+        super(errorCode.getMessage(), cause);
         this.errorCode = errorCode;
     }
 

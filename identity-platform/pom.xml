@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.personal</groupId>
     <artifactId>identity-platform</artifactId>
@@ -16,12 +15,12 @@
         <spring-boot.version>4.0.6</spring-boot.version>
     </properties>
     <!--
-            FIX: previously only listed `auth-context/auth-domain` and the *-context
-            parents. Each sub-module (api/application/domain/infrastructure) is
-            already declared in its own *-context/pom.xml, so listing the *-context
-            parents here is enough — Maven will recurse. We removed the stray
-            `auth-context/auth-domain` entry.
-         -->
+                FIX: previously only listed `auth-context/auth-domain` and the *-context
+                parents. Each sub-module (api/application/domain/infrastructure) is
+                already declared in its own *-context/pom.xml, so listing the *-context
+                parents here is enough — Maven will recurse. We removed the stray
+                `auth-context/auth-domain` entry.
+              -->
     <modules>
         <module>platform-shared</module>
         <module>platform-shared-jpa</module>
@@ -30,8 +29,7 @@
         <module>permission-context</module>
         <module>token-context</module>
         <module>session-context</module>
-        <!--  identity-boostrap directory exists in repo but not yet ready  -->
-        <module>identity-boostrap</module>
+        <module>identity-bootstrap</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -52,7 +50,7 @@
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
             </dependency>
-            <!--  Platform modules  -->
+            <!--   Platform modules   -->
             <dependency>
                 <groupId>com.personal</groupId>
                 <artifactId>platform-shared</artifactId>
@@ -68,7 +66,7 @@
                 <artifactId>platform-contracts</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--  Auth context  -->
+            <!--   Auth context   -->
             <dependency>
                 <groupId>com.personal</groupId>
                 <artifactId>auth-domain</artifactId>
@@ -89,7 +87,7 @@
                 <artifactId>auth-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--  Permission context  -->
+            <!--   Permission context   -->
             <dependency>
                 <groupId>com.personal</groupId>
                 <artifactId>permission-domain</artifactId>
@@ -110,7 +108,7 @@
                 <artifactId>permission-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--  Token context  -->
+            <!--   Token context   -->
             <dependency>
                 <groupId>com.personal</groupId>
                 <artifactId>token-domain</artifactId>
@@ -131,7 +129,7 @@
                 <artifactId>token-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--  Session context  -->
+            <!--   Session context   -->
             <dependency>
                 <groupId>com.personal</groupId>
                 <artifactId>session-domain</artifactId>

@@ -1,3 +1,66 @@
 spring:
   application:
-    name: identity-boostrap
+    name: identity-service
+
+  # ----------------------------------------------------------------------
+  # Oracle Free (via Podman) — see compose file for credentials.
+  # Service name FREEPDB1 (Pluggable DB inside the FREE container).
+  # ----------------------------------------------------------------------
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/FREEPDB1
+    username: IDENTITY_APP
+    password: pantsirs1
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  # ----------------------------------------------------------------------
+  # Flyway: managed schema migrations.
+  # Scripts live in classpath:/db/migration/V{n}__{name}.sql
+  # ----------------------------------------------------------------------
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true        # for an existing schema with no flyway history
+    validate-on-migrate: true
+
+  # ----------------------------------------------------------------------
+  # JPA / Hibernate.
+  # ddl-auto=none — schema is owned by Flyway, NEVER by Hibernate auto-DDL.
+  # ----------------------------------------------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+        format_sql: true
+        jdbc:
+          batch_size: 50
+          time_zone: UTC
+    open-in-view: false              # avoid lazy-load surprises in controllers
+    show-sql: false                  # use logging level below instead
+
+server:
+  port: 8080
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    root: INFO
+    com.personal: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE   # log parameter binding (dev only)
+    org.flywaydb: INFO
