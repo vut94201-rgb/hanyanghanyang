@@ -1,6 +1,7 @@
 package com.personal.persistence;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,6 +28,8 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @EntityListeners(AuditingEntityListener.class)
+
+
 public class BaseJpaAuditEntity {
     @Version
     @Column(name = "version")
@@ -53,4 +56,7 @@ public class BaseJpaAuditEntity {
     @Convert(converter = BooleanToIntegerConverter.class)
     @Column(name = "deleted", nullable = false, columnDefinition = "NUMBER(1,0) DEFAULT 0")
     private Boolean deleted = false;
+
+    public BaseJpaAuditEntity() {
+    }
 }

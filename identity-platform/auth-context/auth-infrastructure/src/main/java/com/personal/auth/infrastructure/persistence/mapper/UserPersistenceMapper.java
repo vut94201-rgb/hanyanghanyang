@@ -6,7 +6,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
-
 /**
  * MapStruct mapper between the {@link User} domain aggregate and its
  * persistence twin {@link UserJpaEntity}.
@@ -25,46 +24,38 @@ import org.mapstruct.ReportingPolicy;
  *       satisfied DB constraints.</li>
  * </ul>
  *
- * <p>Generated as a Spring bean via {@code componentModel = "spring"}.
+ * <p>{@code unmappedTargetPolicy = IGNORE} silently drops any target
+ * fields that {@link User} doesn't carry — namely the inherited audit
+ * columns on {@link UserJpaEntity} ({@code version}, {@code createdBy},
+ * {@code updatedBy}, {@code createdAt}, {@code updatedAt}, {@code active},
+ * {@code deleted}). They are filled by Spring Data JPA auditing and
+ * default initialisers on the entity; the mapper has no business
+ * touching them.
  *
- * <p>Why a separate mapper at all (vs. a plain {@code static} method)?
- * Same reason MapStruct exists everywhere else: compile-time generation
- * catches field renames, no reflection, easy to add edge-case mapping
- * rules without sprinkling code through the use case.
+ * <p>Generated as a Spring bean via {@code componentModel = "spring"}.
  */
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
 public interface UserPersistenceMapper {
+
     /**
      * Map a domain {@link User} to a fresh {@link UserJpaEntity} for INSERT.
-     *
-     * <p>Audit fields ({@code version}, {@code createdBy}, {@code updatedBy},
-     * {@code createdAt}, {@code updatedAt}, {@code active}, {@code deleted})
-     * are left at their defaults — Spring Data JPA auditing + the entity's
-     * default initialisers fill them.
+     * Audit fields are left at their defaults — Spring Data JPA auditing
+     * and the parent {@code BaseJpaAuditEntity}'s field initialisers fill
+     * them on save.
      */
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "active", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     UserJpaEntity toEntity(User user);
 
     /**
      * Copy mutable fields from a (potentially mutated) domain {@link User}
      * onto an existing managed {@link UserJpaEntity} for UPDATE.
      *
-     * <p>id and audit metadata are intentionally not copied.
+     * <p>id is ignored — the managed entity already owns its primary key
+     * and overwriting it would be a bug.
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "active", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     void updateEntity(User user, @MappingTarget UserJpaEntity entity);
 
     /**
