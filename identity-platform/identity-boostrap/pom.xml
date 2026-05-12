@@ -12,6 +12,11 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>com.personal</groupId>
+            <artifactId>platform-shared-jpa</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Tất cả context -->
         <dependency>
             <groupId>com.personal</groupId>

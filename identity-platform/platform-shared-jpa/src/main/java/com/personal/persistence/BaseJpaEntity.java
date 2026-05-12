@@ -10,9 +10,10 @@ import lombok.Setter;
 @MappedSuperclass
 @Setter
 @Getter
-public class BaseJpaEntity {    @Version
-@Column(name = "version")
-private Long version;
+public class BaseJpaEntity {
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @Convert(converter = BooleanToIntegerConverter.class)
     @Column(name = "active", nullable = false, columnDefinition = "NUMBER(1,0) DEFAULT 1")
