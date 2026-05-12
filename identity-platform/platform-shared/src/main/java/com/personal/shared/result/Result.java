@@ -31,7 +31,7 @@ public sealed interface Result<T> permits Result.Success, Result.Failure {
     }
 
     static <T> Result<T> failure(ErrorCode errorCode) {
-        return new Failure<>(errorCode, errorCode.message());
+        return new Failure<>(errorCode, errorCode.getMessage());
     }
 
     static <T> Result<T> failure(ErrorCode errorCode, String detailMessage) {
@@ -79,7 +79,7 @@ public sealed interface Result<T> permits Result.Success, Result.Failure {
         @Override
         public T getOrThrow() {
             throw new NoSuchElementException(
-                    "Result is Failure: [" + errorCode.code() + "] " + detailMessage);
+                    "Result is Failure: [" + errorCode.getCode() + "] " + detailMessage);
         }
 
         @Override public Optional<T> toOptional() { return Optional.empty(); }

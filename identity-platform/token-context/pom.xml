@@ -14,6 +14,6 @@
         <module>token-application</module>
         <module>token-infrastructure</module>
         <module>token-api</module>
-        <module>token-domain</module>
+
     </modules>
 </project>

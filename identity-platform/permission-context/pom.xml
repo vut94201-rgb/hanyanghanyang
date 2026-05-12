@@ -1,24 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.personal</groupId>
         <artifactId>identity-platform</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>permission-context</artifactId>
     <packaging>pom</packaging>
-
     <name>Permission Context</name>
     <description>Bounded context for authorization (RBAC)</description>
-
     <modules>
         <module>permission-domain</module>
         <module>permission-application</module>
         <module>permission-infrastructure</module>
         <module>permission-api</module>
-        <module>permission-domain</module>
     </modules>
 </project>

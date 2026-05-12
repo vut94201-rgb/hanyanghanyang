@@ -31,6 +31,6 @@ public class BusinessException extends RuntimeException {
      * e.g. {@code "AUTH-101"}.
      */
     public String code() {
-        return errorCode.code();
+        return errorCode.getCode();
     }
 }
