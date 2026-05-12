@@ -10,10 +10,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan(basePackages = "com.personal")
 @EnableJpaRepositories(basePackages = "com.personal")
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
-public class IdentityBoostrapApplication {
+public class IdentityBootstrapApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(IdentityBoostrapApplication.class, args);
+        SpringApplication.run(IdentityBootstrapApplication.class, args);
     }
 
 }
