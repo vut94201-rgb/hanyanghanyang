@@ -1,4 +1,4 @@
-package com.personal.identity.boostrap.config;
+package com.personal.identity.bootstrap.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
