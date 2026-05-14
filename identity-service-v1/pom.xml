@@ -1,19 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <!--
-            PARENT POM
-            ==========
-            - Đây là "BOM-ish" parent: chỉ quản lý version + module list, KHÔNG chứa source code.
-            - Dùng spring-boot-starter-parent để hưởng dependency management của Spring Boot
-              (Spring Framework, Hibernate, Tomcat, Jackson, ... đều được pin version sẵn).
-            - Java 21: LTS, virtual threads, pattern matching - đủ "modern" cho fresher.
-            - Spring Boot 3.5.14: phiên bản 3.x stable mới nhất tại thời điểm tạo dự án.
-         -->
+                PARENT POM
+                ==========
+                - Đây là "BOM-ish" parent: chỉ quản lý version + module list, KHÔNG chứa source code.
+                - Dùng spring-boot-starter-parent để hưởng dependency management của Spring Boot
+                  (Spring Framework, Hibernate, Tomcat, Jackson, ... đều được pin version sẵn).
+                - Java 21: LTS, virtual threads, pattern matching - đủ "modern" cho fresher.
+                - Spring Boot 3.5.14: phiên bản 3.x stable mới nhất tại thời điểm tạo dự án.
+              -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
+        <version>3.5.14</version>
         <relativePath/>
     </parent>
     <groupId>com.personal.identity</groupId>
@@ -33,33 +32,33 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--
-                    DEPENDENCY VERSIONS NGOÀI SPRING BOOT BOM
-                    =========================================
-                    Các thư viện Spring Boot KHÔNG quản lý trực tiếp, ta pin version tại đây
-                    để 3 module dùng cùng phiên bản.
-                 -->
+                            DEPENDENCY VERSIONS NGOÀI SPRING BOOT BOM
+                            =========================================
+                            Các thư viện Spring Boot KHÔNG quản lý trực tiếp, ta pin version tại đây
+                            để 3 module dùng cùng phiên bản.
+                          -->
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <!--  JJWT (io.jsonwebtoken) - thư viện JWT phổ biến nhất cho Java  -->
+        <!--   JJWT (io.jsonwebtoken) - thư viện JWT phổ biến nhất cho Java   -->
         <jjwt.version>0.13.0</jjwt.version>
-        <!--  Oracle JDBC driver. ojdbc11 = build cho JDK 11+, dùng được cho 21.  -->
+        <!--   Oracle JDBC driver. ojdbc11 = build cho JDK 11+, dùng được cho 21.   -->
         <ojdbc.version>23.6.0.24.10</ojdbc.version>
-        <!--  MaxMind GeoIP2 - đọc file GeoLite2-City.mmdb offline  -->
-        <geoip2.version>5.1.0</geoip2.version>
-        <!--  yauaa - parse user agent string thành device/os/browser  -->
-        <yauaa.version>8.1.1</yauaa.version>
-        <!--  springdoc-openapi - tự sinh Swagger UI từ controller  -->
-        <springdoc.version>3.0.3</springdoc.version>
-        <!--  Testcontainers - dùng Docker/Podman thật trong integration test (Oracle + Redis)  -->
-        <testcontainers.version>2.0.5</testcontainers.version>
+        <!--   MaxMind GeoIP2 - đọc file GeoLite2-City.mmdb offline   -->
+        <geoip2.version>5.0.2</geoip2.version>
+        <!--   yauaa - parse user agent string thành device/os/browser   -->
+        <yauaa.version>7.30.0</yauaa.version>
+        <!--   springdoc-openapi - tự sinh Swagger UI từ controller   -->
+        <springdoc.version>2.8.17</springdoc.version>
+        <!--   Testcontainers - dùng Docker/Podman thật trong integration test (Oracle + Redis)   -->
+        <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
     <dependencyManagement>
         <!--
-                    Khai báo TẤT CẢ phiên bản tại một nơi. 3 module con chỉ cần khai báo
-                    groupId + artifactId, không cần version. Đây là best practice multi-module.
-                 -->
+                            Khai báo TẤT CẢ phiên bản tại một nơi. 3 module con chỉ cần khai báo
+                            groupId + artifactId, không cần version. Đây là best practice multi-module.
+                          -->
         <dependencies>
-            <!--  Module nội bộ - cho phép module này phụ thuộc module khác trong project  -->
+            <!--   Module nội bộ - cho phép module này phụ thuộc module khác trong project   -->
             <dependency>
                 <groupId>com.personal.identity</groupId>
                 <artifactId>identity-core</artifactId>
@@ -68,9 +67,9 @@
             <dependency>
                 <groupId>com.personal.identity</groupId>
                 <artifactId>identity-infrastructure</artifactId>
-                <version>0.1.0-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
-            <!--  MapStruct - dùng để map giữa domain object (core) và entity (infrastructure)  -->
+            <!--   MapStruct - dùng để map giữa domain object (core) và entity (infrastructure)   -->
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
@@ -81,7 +80,7 @@
                 <artifactId>mapstruct-processor</artifactId>
                 <version>${mapstruct.version}</version>
             </dependency>
-            <!--  JJWT - tách 3 artifact: api (interface), impl (runtime), jackson (parser)  -->
+            <!--   JJWT - tách 3 artifact: api (interface), impl (runtime), jackson (parser)   -->
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-api</artifactId>
@@ -97,31 +96,31 @@
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jjwt.version}</version>
             </dependency>
-            <!--  Oracle JDBC  -->
+            <!--   Oracle JDBC   -->
             <dependency>
                 <groupId>com.oracle.database.jdbc</groupId>
                 <artifactId>ojdbc11</artifactId>
                 <version>${ojdbc.version}</version>
             </dependency>
-            <!--  MaxMind GeoIP2  -->
+            <!--   MaxMind GeoIP2   -->
             <dependency>
                 <groupId>com.maxmind.geoip2</groupId>
                 <artifactId>geoip2</artifactId>
                 <version>${geoip2.version}</version>
             </dependency>
-            <!--  yauaa  -->
+            <!--   yauaa   -->
             <dependency>
                 <groupId>nl.basjes.parse.useragent</groupId>
                 <artifactId>yauaa</artifactId>
                 <version>${yauaa.version}</version>
             </dependency>
-            <!--  springdoc OpenAPI UI  -->
+            <!--   springdoc OpenAPI UI   -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
-            <!--  Testcontainers BOM - import để các module test pin version đồng nhất  -->
+            <!--   Testcontainers BOM - import để các module test pin version đồng nhất   -->
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
@@ -135,18 +134,18 @@
         <pluginManagement>
             <plugins>
                 <!--
-                                    Spring Boot Maven Plugin: dùng ở module identity-api để repackage thành
-                                    fat JAR chạy được. Khai báo ở pluginManagement để module con kế thừa.
-                                 -->
+                                                    Spring Boot Maven Plugin: dùng ở module identity-api để repackage thành
+                                                    fat JAR chạy được. Khai báo ở pluginManagement để module con kế thừa.
+                                                  -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                 </plugin>
                 <!--
-                                    Compiler plugin: cấu hình annotation processor cho Lombok + MapStruct.
-                                    Thứ tự QUAN TRỌNG: Lombok trước MapStruct, kèm lombok-mapstruct-binding
-                                    để MapStruct hiểu được getter/setter mà Lombok sinh ra.
-                                 -->
+                                                    Compiler plugin: cấu hình annotation processor cho Lombok + MapStruct.
+                                                    Thứ tự QUAN TRỌNG: Lombok trước MapStruct, kèm lombok-mapstruct-binding
+                                                    để MapStruct hiểu được getter/setter mà Lombok sinh ra.
+                                                  -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
