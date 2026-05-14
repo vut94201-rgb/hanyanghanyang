@@ -1,0 +1,116 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <!--
+            IDENTITY-INFRASTRUCTURE
+            =======================
+            Tầng adapter. Implement các "port" interface mà core đã định nghĩa:
+              - persistence/        JPA entities + Spring Data repo + adapter implement core repo
+              - security/jwt/       JwtTokenProviderAdapter implements TokenProvider
+              - security/           BCryptPasswordEncoderAdapter implements PasswordEncoder
+              - useragent/          YauaaUserAgentParser implements UserAgentParser
+              - geoip/              MaxMindGeoLocationResolver implements GeoLocationResolver
+              - redis/              AccessTokenBlacklistAdapter implements AccessTokenBlacklist
+
+            Phụ thuộc identity-core để biết các interface cần implement.
+            TUYỆT ĐỐI không phụ thuộc identity-api.
+         -->
+    <parent>
+        <groupId>com.personal.identity</groupId>
+        <artifactId>identity-service</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>identity-infrastructure</artifactId>
+    <name>identity-infrastructure</name>
+    <description>Adapter layer: JPA, Redis, JWT, GeoIP, UserAgent implementations of core ports.</description>
+    <dependencies>
+        <!--  Module nội bộ: cần biết interface của core để implement  -->
+        <dependency>
+            <groupId>com.personal.identity</groupId>
+            <artifactId>identity-core</artifactId>
+        </dependency>
+        <!--
+                    JPA + Hibernate: dùng cho UserEntity, SessionEntity, RefreshTokenEntity, ...
+                    spring-boot-starter-data-jpa kéo theo Hibernate, HikariCP, transaction.
+                 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <!--
+                    Spring Data Redis + Lettuce (default client).
+                    Dùng cho AccessTokenBlacklistAdapter (set TTL khi logout).
+                 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!--
+                    spring-security-crypto: chỉ lấy BCryptPasswordEncoder, KHÔNG kéo theo
+                    toàn bộ Spring Security web filter. (starter-security sẽ ở module api.)
+                    Nhờ vậy core/infrastructure không bị "ô nhiễm" filter chain.
+                 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+        <!--  Oracle JDBC driver, runtime scope  -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!--  JJWT: api để inject, impl + jackson chỉ cần runtime  -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!--  MaxMind GeoIP2: đọc file GeoLite2-City.mmdb  -->
+        <dependency>
+            <groupId>com.maxmind.geoip2</groupId>
+            <artifactId>geoip2</artifactId>
+        </dependency>
+        <!--  yauaa: parse user agent string  -->
+        <dependency>
+            <groupId>nl.basjes.parse.useragent</groupId>
+            <artifactId>yauaa</artifactId>
+        </dependency>
+        <!--  MapStruct: viết mapper Entity <-> Domain  -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+        <!--  Lombok  -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!--  ===================== TEST =====================  -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--  Testcontainers: chạy Oracle + Redis thật khi integration test  -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>oracle-free</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

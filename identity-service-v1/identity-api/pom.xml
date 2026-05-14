@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        IDENTITY-API
+        ============
+        Tầng presentation + bootstrap. Chứa:
+          - IdentityApplication.java (main, @SpringBootApplication)
+          - Controllers (AuthController, SessionController, UserController, RoleController)
+          - Request/Response DTOs
+          - Security config (JwtAuthenticationFilter, SecurityFilterChain)
+          - GlobalExceptionHandler
+          - application.yml, Flyway migrations
+
+        Đây là module duy nhất có Spring Web + Spring Security web. Cũng là module
+        duy nhất build ra fat JAR chạy được (spring-boot-maven-plugin chỉ active ở đây).
+    -->
+
+    <parent>
+        <groupId>com.personal.identity</groupId>
+        <artifactId>identity-service</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>identity-api</artifactId>
+    <name>identity-api</name>
+    <description>API layer: REST controllers, security config, Spring Boot bootstrap.</description>
+
+    <dependencies>
+        <!-- Module nội bộ: kéo theo cả core (transitive) -->
+        <dependency>
+            <groupId>com.example.identity</groupId>
+            <artifactId>identity-infrastructure</artifactId>
+        </dependency>
+
+        <!-- Web: REST controller, Jackson, embedded Tomcat -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+            Security: filter chain, AuthenticationManager, @PreAuthorize.
+            JwtAuthenticationFilter sẽ extend OncePerRequestFilter.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!--
+            Validation engine (Hibernate Validator). Có engine ở đây thì @Valid trong
+            controller mới chạy thật. Core chỉ khai báo annotation, không cần engine.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!--
+            Flyway: chạy migration .sql trong db/migration khi app start.
+            flyway-database-oracle là module riêng cho Flyway 10+ - PHẢI khai báo,
+            nếu không sẽ lỗi "No database found to handle jdbc:oracle:thin:...".
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-oracle</artifactId>
+        </dependency>
+
+        <!-- Swagger UI: /swagger-ui.html ngay sau khi start -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!--
+            JJWT api: AuthController có thể cần đọc claims khi build response.
+            (Phần lớn logic JWT nằm ở infrastructure, nhưng giữ ở classpath để khi
+            cần extract sessionId từ token thì có sẵn.)
+        -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ===================== TEST ===================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>oracle-free</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!--
+            Chỉ module này repackage thành fat JAR chạy được.
+            Khi build, file identity-api/target/identity-api-0.1.0-SNAPSHOT.jar chạy bằng `java -jar`.
+        -->
+        <finalName>identity-api</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.example.identity.api.IdentityApplication</mainClass>
+                    <excludes>
+                        <!-- Loại Lombok khỏi fat JAR runtime, giảm dung lượng -->
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

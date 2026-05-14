@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        IDENTITY-CORE
+        =============
+        Module business logic thuần. Chứa:
+          - Domain objects (User, Session, RefreshToken, ...) - POJO
+          - Domain services (AuthService, SessionService, TokenService)
+          - Port interfaces (UserRepository, TokenProvider, GeoLocationResolver, ...)
+          - Domain exceptions
+
+        QUY TẮC CỨNG:
+          - KHÔNG phụ thuộc Spring Web, Spring Data JPA, Redis, JJWT, yauaa, MaxMind.
+          - CHỈ phụ thuộc spring-context để dùng @Service/@Component (giúp Spring tự
+            wire vào). Một số dự án "thuần" hơn còn không dùng cả cái này - nhưng
+            với fresher, có spring-context cho dễ inject và test.
+          - Validation API (jakarta.validation): chỉ dùng annotation, không cần
+            engine - engine sẽ có ở identity-api.
+
+        Nếu sau này muốn đổi sang web framework khác (Quarkus, Micronaut) hoặc
+        đổi database (MongoDB), module này KHÔNG cần sửa.
+    -->
+
+    <parent>
+        <groupId>com.personal.identity</groupId>
+        <artifactId>identity-service</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>identity-core</artifactId>
+    <name>identity-core</name>
+    <description>Domain layer: business logic, ports, domain models. Framework-agnostic.</description>
+
+    <dependencies>
+        <!--
+            spring-context: chỉ để dùng @Service/@Component, KHÔNG kéo theo web/data/security.
+            Nếu strict hexagonal, có thể bỏ luôn cái này và để infrastructure tự đăng ký bean.
+        -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- Validation annotations (@NotBlank, @Size, ...) cho command/request object -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+
+        <!-- Lombok: @Getter, @Builder, @RequiredArgsConstructor để giảm boilerplate -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Test deps -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <!--
+                Loại spring-web/json/test-autoconfigure để giữ core "nhẹ" trong test.
+                Chỉ cần JUnit + AssertJ + Mockito cho unit test thuần.
+            -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+</project>
