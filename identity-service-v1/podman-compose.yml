@@ -24,7 +24,7 @@ services:
       - oracle-free-data:/opt/oracle/oradata
       # init.sql chạy 1 lần đầu tiên khi container khởi tạo DB lần đầu.
       # Dùng để tạo user "identity" và grant quyền.
-      - ./docker/oracle/init.sql:/opt/oracle/scripts/startup/01-init.sql:ro
+      - ./docker/oracle/init.sql:/opt/oracle/scripts/startup/01-init.sql:ro,z
     healthcheck:
       test:
         [
