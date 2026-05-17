@@ -13,7 +13,7 @@
           - Request/Response DTOs
           - Security config (JwtAuthenticationFilter, SecurityFilterChain)
           - GlobalExceptionHandler
-        
+
 
         Đây là module duy nhất có Spring Web + Spring Security web. Cũng là module
         duy nhất build ra fat JAR chạy được (spring-boot-maven-plugin chỉ active ở đây).
@@ -32,7 +32,7 @@
     <dependencies>
         <!-- Module nội bộ: kéo theo cả core (transitive) -->
         <dependency>
-            <groupId>com.example.identity</groupId>
+            <groupId>com.personal.identity</groupId>
             <artifactId>identity-infrastructure</artifactId>
         </dependency>
 
@@ -131,7 +131,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.example.identity.api.IdentityApplication</mainClass>
+                    <mainClass>com.personal.identity.api.IdentityApplication</mainClass>
                     <excludes>
                         <!-- Loại Lombok khỏi fat JAR runtime, giảm dung lượng -->
                         <exclude>

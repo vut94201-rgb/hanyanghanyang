@@ -43,7 +43,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 )
 @EnableJpaRepositories(
         // Trỏ tới package chứa Spring Data repository interfaces
-        basePackages = "com.personal.identity.infrastructure.persistence.jpa"
+        basePackages = "com.personal.identity.infrastructure.persistence"
 )
 public class IdentityApplication {
 
