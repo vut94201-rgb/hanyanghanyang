@@ -13,7 +13,7 @@
           - Request/Response DTOs
           - Security config (JwtAuthenticationFilter, SecurityFilterChain)
           - GlobalExceptionHandler
-          - application.yml, Flyway migrations
+        
 
         Đây là module duy nhất có Spring Web + Spring Security web. Cũng là module
         duy nhất build ra fat JAR chạy được (spring-boot-maven-plugin chỉ active ở đây).

@@ -1,0 +1,110 @@
+# =============================================================================
+# application.yml - cấu hình MẶC ĐỊNH (production-leaning)
+# =============================================================================
+# File này chứa các giá trị an toàn-mặc-định. Mọi secret và giá trị môi trường
+# cụ thể đọc từ ENV VAR (cú pháp ${VAR:default}).
+#
+# Profile dev override file này bằng application-dev.yml.
+# Khi không set spring.profiles.active, mặc định KHÔNG có profile - tức là
+# app sẽ ĐÒI các env var bắt buộc (JWT_SECRET, v.v.) trước khi start.
+# =============================================================================
+
+spring:
+  application:
+    name: identity-service
+
+  # ---- Datasource: Oracle Free 23 trên port 1521, PDB tên FREEPDB1 ----
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:oracle:thin:@localhost:1521/FREEPDB1}
+    username: ${SPRING_DATASOURCE_USERNAME:identity}
+    password: ${SPRING_DATASOURCE_PASSWORD:identity123}
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      # Pool size hợp lý cho fresher demo. Production có thể bump lên.
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      pool-name: identity-hikari-pool
+
+  # ---- JPA / Hibernate ----
+  jpa:
+    hibernate:
+      # CỰC KỲ QUAN TRỌNG: validate, KHÔNG dùng update/create-drop.
+      # Schema được quản lý 100% bởi Flyway, Hibernate chỉ check entity có khớp DB không.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+        # Format SQL khi log (dev). Production tắt qua application-prod.yml nếu cần.
+        format_sql: true
+        # Batch insert/update hoạt động với sequence allocationSize=50
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+    open-in-view: false   # KHÔNG để OSIV - tránh lazy loading "vô hình" trong controller
+
+  # ---- Flyway ----
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+
+  # ---- Redis ----
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+# ---- Server ----
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    # KHÔNG lộ stacktrace ra response - GlobalExceptionHandler tự format error
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+# ---- Cấu hình ứng dụng (custom) ----
+# Đặt dưới namespace "app.*" để gom toàn bộ config riêng của Identity Service.
+# Sẽ map sang @ConfigurationProperties("app.jwt"), @ConfigurationProperties("app.geoip"), v.v.
+app:
+  jwt:
+    # Secret PHẢI là Base64-encoded chuỗi >= 256 bit. Dev override trong application-dev.yml.
+    # Production: BẮT BUỘC set qua env, không có default.
+    secret: ${JWT_SECRET}
+    issuer: identity-service
+    access-token-ttl-minutes: ${JWT_ACCESS_TOKEN_TTL_MINUTES:15}
+    refresh-token-ttl-days: ${JWT_REFRESH_TOKEN_TTL_DAYS:30}
+
+  geoip:
+    # Đường dẫn tới GeoLite2-City.mmdb. Mặc định trỏ tới docker/geoip nếu chạy local.
+    database-path: ${GEOIP_DATABASE_PATH:./docker/geoip/GeoLite2-City.mmdb}
+    # Nếu false, GeoLocationResolver sẽ return EMPTY thay vì throw - tiện khi
+    # chưa kịp tải file .mmdb về.
+    fail-on-missing-database: ${GEOIP_FAIL_ON_MISSING:false}
+
+# ---- springdoc OpenAPI (Swagger UI) ----
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+
+# ---- Logging ----
+logging:
+  level:
+    root: INFO
+    com.personal.identity: DEBUG
+    # Tắt log "verbose" của Hibernate; bật tạm khi cần debug query.
+    org.hibernate.SQL: INFO
+    org.hibernate.orm.jdbc.bind: INFO
