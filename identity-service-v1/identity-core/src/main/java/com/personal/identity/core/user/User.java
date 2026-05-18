@@ -1,5 +1,6 @@
 package com.personal.identity.core.user;
 
+import com.personal.identity.core.role.Permission;
 import com.personal.identity.core.role.Role;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -10,73 +11,77 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Aggregate root cho User.
  *
- * <p><b>Vì sao là class có behavior, KHÔNG phải record?</b>
+ * <h2>Mô hình phân quyền</h2>
+ * User có 2 nguồn permission:
+ * <ol>
+ *   <li><b>Qua role</b> ({@link #roles}) - RBAC thuần. Role gom permission theo
+ *       nhóm logic (ADMIN, USER, MODERATOR...).</li>
+ *   <li><b>Direct grant</b> ({@link #directPermissions}) - gán trực tiếp ngoài role.
+ *       Linh hoạt cho case 1 user duy nhất cần 1 quyền đặc biệt mà không cần tạo
+ *       role rác.</li>
+ * </ol>
+ *
+ * <p><b>Effective permissions = union(2 nguồn)</b> - chỉ additive, không deny.
+ * Xem {@link #getEffectivePermissions()}.
+ *
+ * <p>Đây là pattern hybrid RBAC + ABAC mà Azure AD, AWS IAM dùng.
+ *
+ * <h2>Đặc điểm class</h2>
  * <ul>
- *   <li>User có lifecycle: tạo → đổi password → gán role → disable → soft delete.
- *       Behavior này nên đặt ngay trên domain object thay vì rải rác trong service.</li>
- *   <li>Set roles là mutable collection - record không phù hợp.</li>
+ *   <li>Class có behavior thay vì record - vì có lifecycle: tạo → đổi password →
+ *       gán role / direct permission → disable → soft delete.</li>
+ *   <li>Setter của id, createdAt, updatedAt, deleted{,At} là package-private -
+ *       chỉ mapper trong cùng package set được; code khác không thể.</li>
+ *   <li>{@code passwordHash} có getter public nhưng KHÔNG bao giờ lộ qua DTO -
+ *       trách nhiệm của tầng controller/mapper.</li>
  * </ul>
- *
- * <p><b>Lưu ý setter visibility:</b>
- * {@code id}, {@code createdAt}, {@code updatedAt} chỉ có {@code @Setter} ở mức
- * <i>package-private</i> (chỉ mapper trong cùng package mới set được). Code application
- * thông thường KHÔNG được set thủ công các field này - chúng do persistence layer
- * quản lý (id từ sequence, timestamp từ JPA Auditing).
- *
- * <p><b>passwordHash không có getter public:</b>
- * Chỉ {@code AuthService} cần đọc để verify - và service đó được phép. Hash không
- * bao giờ lộ ra ngoài (vd: không xuất hiện trong DTO response). Để cấp quyền đọc
- * cho service mà không leak ra controller, ta dùng method {@link #getPasswordHash()}
- * có Javadoc cảnh báo.
  */
 @Getter
 @Builder
 @NoArgsConstructor
 public class User {
 
-    /**
-     * PK - auto-generated từ Oracle SEQUENCE {@code users_seq}.
-     * Mapper từ entity set giá trị này; code khác KHÔNG set thủ công.
-     */
     @Setter(AccessLevel.PACKAGE)
     private Long id;
 
     private String username;
-
     private String emailAddress;
 
     /** BCrypt hash. KHÔNG bao giờ lộ qua DTO response. */
     private String passwordHash;
 
     private String fullName;
-
     private UserStatus accountStatus;
 
     /** Roles được gán cho user. KHÔNG null (worst case: rỗng). */
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
-    /** Audit field - JPA tự set. */
+    /**
+     * Permission gán trực tiếp cho user, NGOÀI permission từ role.
+     * Effective permissions = union(roles' permissions, directPermissions).
+     */
+    @Builder.Default
+    private Set<Permission> directPermissions = new HashSet<>();
+
     @Setter(AccessLevel.PACKAGE)
     private Instant createdAt;
 
     @Setter(AccessLevel.PACKAGE)
     private Instant updatedAt;
 
-    /** Soft-delete fields. {@code deleted=true} → bị filter khỏi query mặc định. */
     @Setter(AccessLevel.PACKAGE)
     private boolean deleted;
 
     @Setter(AccessLevel.PACKAGE)
     private Instant deletedAt;
 
-    // ---- Cần tạo ALL-ARGS constructor MANUAL vì @Builder cộng với @Setter(PACKAGE)
-    // ---- không tự sinh ra constructor đầy đủ. Lombok @AllArgsConstructor cũng được
-    // ---- nhưng để rõ ràng cho fresher đọc code, tôi viết tay:
+    // ---- All-args constructor cho @Builder (Lombok yêu cầu khi có Setter custom) ----
     public User(
             Long id,
             String username,
@@ -85,6 +90,7 @@ public class User {
             String fullName,
             UserStatus accountStatus,
             Set<Role> roles,
+            Set<Permission> directPermissions,
             Instant createdAt,
             Instant updatedAt,
             boolean deleted,
@@ -97,6 +103,7 @@ public class User {
         this.fullName = fullName;
         this.accountStatus = accountStatus;
         this.roles = roles != null ? roles : new HashSet<>();
+        this.directPermissions = directPermissions != null ? directPermissions : new HashSet<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deleted = deleted;
@@ -104,13 +111,9 @@ public class User {
     }
 
     // ============================================================
-    // DOMAIN BEHAVIOR - đặt ở đây thay vì rải rác trong service
+    // DOMAIN BEHAVIOR
     // ============================================================
 
-    /**
-     * Đổi mật khẩu. Service gọi {@code PasswordEncoder.encode(plainText)} trước
-     * rồi truyền hash vào đây - User domain KHÔNG biết về encoder cụ thể.
-     */
     public void changePassword(String newPasswordHash) {
         if (newPasswordHash == null || newPasswordHash.isBlank()) {
             throw new IllegalArgumentException("New password hash must not be blank");
@@ -118,34 +121,64 @@ public class User {
         this.passwordHash = newPasswordHash;
     }
 
-    /** Gán thêm role. Idempotent (gán 2 lần cùng role không có hiệu ứng phụ). */
+    /** Gán role. Idempotent (gán 2 lần cùng role = 1 lần). */
     public void addRole(Role role) {
         if (role == null) throw new IllegalArgumentException("Role must not be null");
         this.roles.add(role);
     }
 
-    /** Bỏ role. */
     public void removeRole(Role role) {
         this.roles.remove(role);
     }
 
-    /** Admin disable user. */
-    public void disable() {
-        this.accountStatus = UserStatus.DISABLED;
+    /**
+     * Gán direct permission ngoài role. Idempotent.
+     *
+     * <p>Lưu ý: KHÔNG check trùng với permission từ role - nếu user đã có
+     * {@code user:read} qua role, gán direct lại cũng OK, getEffectivePermissions
+     * sẽ dedupe bằng Set.
+     */
+    public void grantPermission(Permission permission) {
+        if (permission == null) throw new IllegalArgumentException("Permission must not be null");
+        this.directPermissions.add(permission);
     }
 
-    /** Mở khóa lại - dùng cho cả DISABLED và LOCKED. */
-    public void activate() {
-        this.accountStatus = UserStatus.ACTIVE;
+    /**
+     * Bỏ direct permission. CHỈ ảnh hưởng đến direct - nếu user vẫn có permission
+     * này qua role, vẫn còn trong effectivePermissions.
+     */
+    public void revokePermission(Permission permission) {
+        this.directPermissions.remove(permission);
     }
 
-    /** Auto-lock sau quá nhiều lần login sai. */
-    public void lock() {
-        this.accountStatus = UserStatus.LOCKED;
-    }
+    public void disable() { this.accountStatus = UserStatus.DISABLED; }
+    public void activate() { this.accountStatus = UserStatus.ACTIVE; }
+    public void lock() { this.accountStatus = UserStatus.LOCKED; }
 
-    /** Trạng thái có cho phép login không. */
     public boolean canLogin() {
         return accountStatus == UserStatus.ACTIVE && !deleted;
+    }
+
+    /**
+     * Tổng hợp tất cả permission user thực sự có.
+     *
+     * @return Set permission đã dedupe, KHÔNG null (worst case: rỗng).
+     */
+    public Set<Permission> getEffectivePermissions() {
+        Set<Permission> result = new HashSet<>(directPermissions);
+        for (Role role : roles) {
+            result.addAll(role.getPermissions());
+        }
+        return result;
+    }
+
+    /**
+     * Helper cho service: lấy effective permissions dưới dạng Set string code.
+     * Dùng khi build JWT claims hoặc check {@code hasAuthority(...)}.
+     */
+    public Set<String> getEffectivePermissionCodes() {
+        return getEffectivePermissions().stream()
+                .map(Permission::permissionCode)
+                .collect(Collectors.toSet());
     }
 }
