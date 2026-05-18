@@ -15,20 +15,15 @@ import lombok.Setter;
 /**
  * JPA entity cho bảng {@code permissions}.
  *
- * <p>Kế thừa {@link AuditableEntity} (ở sub-package {@code entity.base}) - có
- * {@code created_at}, {@code updated_at}, {@code version}.
- *
- * <p>KHÔNG khai báo bidirectional sang RoleEntity/UserEntity. Quan hệ many-to-many
- * được khai báo phía Role (cho role_permissions) và phía User (cho user_permissions)
- * - đều là owning side. Khi cần query "permission này thuộc role/user nào", viết
- * query thủ công - tránh phức tạp circular.
+ * <p>Kế thừa {@code AuditableEntity<Long>} - có {@code created_at}, {@code updated_at},
+ * {@code version}, kèm getter {@code Long getId()} type-safe (không phải {@code Object}).
  */
 @Entity
 @Table(name = "permissions")
 @Getter
 @Setter
 @NoArgsConstructor
-public class PermissionEntity extends AuditableEntity {
+public class PermissionEntity extends AuditableEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "permissions_seq_gen")
@@ -46,8 +41,6 @@ public class PermissionEntity extends AuditableEntity {
     @Column(name = "description", length = 500)
     private String description;
 
-    @Override
-    public Object getId() {
-        return id;
-    }
+    // Note: KHÔNG cần override getId() - Lombok @Getter tự sinh public Long getId()
+    // từ field 'id', đã thỏa mãn abstract method ở BaseEntity<Long>.
 }

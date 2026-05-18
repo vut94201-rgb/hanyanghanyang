@@ -29,24 +29,18 @@ import java.util.Set;
  *
  * <h3>Phân quyền 2 nguồn</h3>
  * <ul>
- *   <li>{@link #roles} - many-to-many sang {@link RoleEntity} qua bảng {@code user_roles}.
- *       Permissions từ role là RBAC thuần.</li>
- *   <li>{@link #directPermissions} - many-to-many sang {@link PermissionEntity} qua bảng
- *       {@code user_permissions}. Direct grant ngoài role.</li>
+ *   <li>{@link #roles} - M2M qua {@code user_roles} (RBAC).</li>
+ *   <li>{@link #directPermissions} - M2M qua {@code user_permissions} (direct grant).</li>
  * </ul>
- * Effective permissions = union 2 nguồn (xem {@code User#getEffectivePermissions()} ở domain).
+ * Effective permissions = union 2 nguồn.
  *
  * <h3>Soft delete</h3>
- * <ul>
- *   <li>{@code @SQLDelete}: gọi {@code repository.delete(...)} sẽ chạy UPDATE thay vì DELETE.
- *       UPDATE tự tăng version để khớp optimistic locking.</li>
- *   <li>{@code @SQLRestriction}: thêm WHERE {@code is_deleted = 0} vào MỌI query →
- *       user soft-deleted bị filter mặc định.</li>
- * </ul>
+ * {@code @SQLDelete} + {@code @SQLRestriction} - DELETE thực ra là UPDATE,
+ * query mặc định lọc {@code is_deleted = 0}.
  *
  * <h3>Fetch strategy</h3>
- * Cả roles và directPermissions đều LAZY. Repository có {@code @EntityGraph} để
- * fetch on-demand, tránh N+1.
+ * roles + directPermissions LAZY. Repository có {@code @EntityGraph} fetch
+ * on-demand qua {@code findWithAuthoritiesBy*}.
  */
 @Entity
 @Table(name = "users")
@@ -55,7 +49,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserEntity extends SoftDeletableAuditableEntity {
+public class UserEntity extends SoftDeletableAuditableEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq_gen")
@@ -73,7 +67,7 @@ public class UserEntity extends SoftDeletableAuditableEntity {
     @Column(name = "email_address", nullable = false, length = 255, unique = true)
     private String emailAddress;
 
-    /** BCrypt hash, độ dài cố định 60. Load thường (không lazy basic). */
+    /** BCrypt hash, độ dài cố định 60. Load thường. */
     @Column(name = "password_hash", nullable = false, length = 60)
     private String passwordHash;
 
@@ -84,10 +78,7 @@ public class UserEntity extends SoftDeletableAuditableEntity {
     @Column(name = "account_status", nullable = false, length = 20)
     private UserStatus accountStatus;
 
-    /**
-     * Roles - RBAC nguồn 1. LAZY mặc định.
-     * Repository fetch on-demand qua {@code @EntityGraph}.
-     */
+    /** Roles - nguồn permission 1 (RBAC). */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
@@ -96,18 +87,7 @@ public class UserEntity extends SoftDeletableAuditableEntity {
     )
     private Set<RoleEntity> roles = new HashSet<>();
 
-    /**
-     * Direct permissions - nguồn 2 ngoài role.
-     *
-     * <p>Note: bảng nối {@code user_permissions} có thêm cột audit
-     * ({@code granted_at, granted_by, grant_reason}) - JPA không map những cột
-     * này khi dùng {@code @ManyToMany} đơn thuần (chỉ map 2 cột FK). Để track
-     * audit metadata, sau này có thể tách ra entity nối riêng
-     * {@code UserPermissionGrantEntity} với {@code @ManyToOne x2}.
-     *
-     * <p>Hiện tại fresher demo OK với @ManyToMany - các cột audit vẫn được insert
-     * (default SYSTIMESTAMP cho granted_at; granted_by/grant_reason set qua native query).
-     */
+    /** Direct permissions - nguồn 2, ngoài role. */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_permissions",
@@ -116,8 +96,5 @@ public class UserEntity extends SoftDeletableAuditableEntity {
     )
     private Set<PermissionEntity> directPermissions = new HashSet<>();
 
-    @Override
-    public Object getId() {
-        return id;
-    }
+    // Lombok @Getter tự sinh Long getId() - thỏa mãn abstract method ở base.
 }

@@ -22,19 +22,16 @@ import java.util.Set;
 /**
  * JPA entity cho bảng {@code roles}.
  *
- * <p>Là owning side của quan hệ many-to-many với {@link PermissionEntity}.
- * Bảng nối {@code role_permissions} đã có trong migration V1.
- *
- * <p><b>Fetch strategy:</b> {@code permissions} là {@code LAZY}.
- * Repository {@code RoleJpaRepository} có method {@code findWithPermissions*}
- * dùng {@code @EntityGraph} để fetch có chọn lọc, tránh N+1.
+ * <p>Owning side many-to-many với {@link PermissionEntity} qua bảng
+ * {@code role_permissions}. {@code FetchType.LAZY} mặc định, repository có
+ * {@code @EntityGraph} để fetch on-demand.
  */
 @Entity
 @Table(name = "roles")
 @Getter
 @Setter
 @NoArgsConstructor
-public class RoleEntity extends AuditableEntity {
+public class RoleEntity extends AuditableEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "roles_seq_gen")
@@ -63,8 +60,5 @@ public class RoleEntity extends AuditableEntity {
     )
     private Set<PermissionEntity> permissions = new HashSet<>();
 
-    @Override
-    public Object getId() {
-        return id;
-    }
+    // Lombok @Getter tự sinh Long getId() - thỏa mãn abstract method ở base.
 }
