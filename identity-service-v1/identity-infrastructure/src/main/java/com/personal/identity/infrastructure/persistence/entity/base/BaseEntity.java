@@ -43,7 +43,7 @@ import java.util.Objects;
 @MappedSuperclass
 @Getter
 @Setter
-public abstract class BaseEntity<ID extends Serializable> {
+public abstract class BaseEntity<ID extends Serializable> implements Serializable {
 
     @Version
     @Column(name = "version", nullable = false)
