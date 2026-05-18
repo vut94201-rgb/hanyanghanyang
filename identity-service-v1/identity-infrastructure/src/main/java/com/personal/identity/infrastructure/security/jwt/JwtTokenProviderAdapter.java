@@ -62,10 +62,14 @@ public class JwtTokenProviderAdapter implements TokenProvider {
         Instant now = Instant.now();
         Instant expiresAt = now.plus(Duration.ofMinutes(properties.accessTokenTtlMinutes()));
 
+        // JTI: nếu caller đã set tokenId (rare, chỉ test) thì dùng, nếu null thì tự sinh.
+        // Trong flow login/refresh bình thường, service truyền tokenId=null - adapter tự gen.
+        String tokenId = claims.tokenId() != null ? claims.tokenId() : UUID.randomUUID().toString();
+
         return Jwts.builder()
                 .issuer(properties.issuer())
                 .subject(String.valueOf(claims.userId()))
-                .id(UUID.randomUUID().toString())              // JTI cho blacklist
+                .id(tokenId)                                   // JTI cho blacklist
                 .claim(CLAIM_SESSION_ID, claims.sessionId())
                 .claim(CLAIM_ROLES, claims.roleCodes())
                 .claim(CLAIM_PERMISSIONS, claims.permissionCodes())
@@ -106,6 +110,7 @@ public class JwtTokenProviderAdapter implements TokenProvider {
     }
 
     private TokenClaims toTokenClaims(Claims jwtClaims) {
+        String tokenId = jwtClaims.getId();   // JTI - dùng cho blacklist khi logout
         Long userId = Long.valueOf(jwtClaims.getSubject());
         String sessionId = jwtClaims.get(CLAIM_SESSION_ID, String.class);
         Set<String> roles = readStringSet(jwtClaims, CLAIM_ROLES);
@@ -113,7 +118,7 @@ public class JwtTokenProviderAdapter implements TokenProvider {
         Instant issuedAt = jwtClaims.getIssuedAt().toInstant();
         Instant expiresAt = jwtClaims.getExpiration().toInstant();
 
-        return new TokenClaims(userId, sessionId, roles, permissions, issuedAt, expiresAt);
+        return new TokenClaims(tokenId, userId, sessionId, roles, permissions, issuedAt, expiresAt);
     }
 
     /**

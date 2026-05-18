@@ -204,6 +204,7 @@ public class RefreshTokenUseCase {
                 .collect(Collectors.toSet());
 
         TokenClaims claims = new TokenClaims(
+                null,  // tokenId - adapter tự sinh JTI
                 user.getId(),
                 sessionId,
                 roleCodes,

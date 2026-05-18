@@ -1,5 +1,6 @@
 package com.personal.identity.core.service;
 
+import com.personal.identity.core.role.Role;
 import com.personal.identity.core.security.PasswordEncoder;
 import com.personal.identity.core.security.SecureRandomGenerator;
 import com.personal.identity.core.session.*;
@@ -187,10 +188,11 @@ public class LoginUseCase {
 
         // Role codes lấy trực tiếp từ user.roles
         Set<String> roleCodes = user.getRoles().stream()
-                .map(role -> role.getRoleCode())
+                .map(Role::getRoleCode)
                 .collect(Collectors.toSet());
 
         TokenClaims claims = new TokenClaims(
+                null,  // tokenId - adapter tự sinh JTI
                 user.getId(),
                 sessionId,
                 roleCodes,
