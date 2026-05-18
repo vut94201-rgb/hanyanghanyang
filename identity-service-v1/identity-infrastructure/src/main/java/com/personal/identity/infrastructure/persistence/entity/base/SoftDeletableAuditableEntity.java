@@ -1,4 +1,4 @@
-package com.personal.identity.infrastructure.persistence.entity;
+package com.personal.identity.infrastructure.persistence.entity.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
