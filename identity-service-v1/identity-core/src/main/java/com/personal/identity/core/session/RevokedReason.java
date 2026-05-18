@@ -10,7 +10,7 @@ package com.personal.identity.core.session;
 public enum RevokedReason {
     /** User chủ động logout. */
     LOGOUT,
-    /** Token reuse detected → revoke cả family. */
+    /** Token reuse detected → revoke all family. */
     TOKEN_REUSE,
     /** User chủ động logout 1 device khác từ session list. */
     USER_ACTION,

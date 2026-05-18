@@ -18,11 +18,11 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/health")
-@Tag(name = "Health", description = "Endpoint kiểm tra app sống")
+@Tag(name = "Health", description = "Endpoint to check if app is running")
 public class HealthController {
 
     @GetMapping
-    @Operation(summary = "Trạng thái cơ bản của service")
+    @Operation(summary = "common state of service")
     public Map<String, Object> health() {
         return Map.of(
                 "status", "OK",

@@ -1,5 +1,7 @@
 package com.personal.identity.core.shared.exception;
 
+import lombok.Getter;
+
 /**
  * Base cho TẤT CẢ exception phát sinh từ business logic của domain.
  *
@@ -21,6 +23,7 @@ package com.personal.identity.core.shared.exception;
  *   <li>{@code TOKEN.REUSE_DETECTED}</li>
  * </ul>
  */
+@Getter
 public abstract class DomainException extends RuntimeException {
 
     private final String errorCode;
@@ -35,7 +38,4 @@ public abstract class DomainException extends RuntimeException {
         this.errorCode = errorCode;
     }
 
-    public String getErrorCode() {
-        return errorCode;
-    }
 }
