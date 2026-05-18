@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
@@ -42,6 +44,7 @@ public abstract class SoftDeletableAuditableEntity extends AuditableEntity {
      * Cờ soft delete. Map sang Oracle NUMBER(1) - JPA tự convert boolean <-> 0/1.
      * Default 0 (chưa xóa) đã được set ở migration SQL.
      */
+    @JdbcTypeCode(SqlTypes.NUMERIC)
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 
