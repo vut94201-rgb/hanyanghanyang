@@ -123,7 +123,7 @@ public class YauaaUserAgentParser implements UserAgentParser {
             }
         }
         if (osName != null) {
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append(" on ");
             }
             sb.append(osName);
