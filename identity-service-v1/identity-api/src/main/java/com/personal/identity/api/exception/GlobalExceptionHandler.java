@@ -1,6 +1,8 @@
 package com.personal.identity.api.exception;
 
 
+
+
 import com.personal.identity.api.dto.ErrorResponse;
 import com.personal.identity.core.role.RoleNotFoundException;
 import com.personal.identity.core.session.SessionNotFoundException;
@@ -221,7 +223,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
-    private ErrorResponse.FieldError toFieldError(ErrorResponse.FieldError fieldError) {
+    private ErrorResponse.FieldError toFieldError(FieldError fieldError) {
         String message = fieldError.getDefaultMessage();
         if (message == null) {
             message = "invalid";
