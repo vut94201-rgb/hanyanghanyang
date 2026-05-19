@@ -184,7 +184,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal AuthenticatedUser user) {
         User found = userRepository.findById(user.userId())
-                .orElseThrow(() -> new UserNotFoundException(user.userId()));
+                .orElseThrow(() -> UserNotFoundException.byId(user.userId()));
         return ResponseEntity.ok(UserResponse.from(found));
     }
 
