@@ -39,7 +39,7 @@ public abstract class SoftDeletableAuditableEntity<ID extends Serializable> exte
      * Cờ soft delete. Ép map sang JDBC NUMERIC để khớp Oracle {@code NUMBER(1)}.
      * Hibernate tự convert {@code true ↔ 1}, {@code false ↔ 0}.
      */
-    @JdbcTypeCode(SqlTypes.NUMERIC)
+    @JdbcTypeCode(SqlTypes.TINYINT)
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 
