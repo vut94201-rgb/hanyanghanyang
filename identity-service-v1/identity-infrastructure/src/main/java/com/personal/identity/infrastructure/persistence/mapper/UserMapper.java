@@ -60,6 +60,16 @@ public interface UserMapper {
 
     /**
      * Update entity đã tồn tại. KHÔNG update id (PK không đổi).
+     *
+     * <p><b>Vì sao KHÔNG map roles + directPermissions ở đây:</b> mapper sẽ REPLACE
+     * cả collection bằng entities mới build từ domain (qua RoleMapper/PermissionMapper).
+     * Các entity mới này là DETACHED (không có @Version từ DB) - khi Hibernate auto-flush
+     * sẽ ném {@code PropertyValueException: uninitialized version value}.
+     * <p>Giải pháp: giữ nguyên managed collection ở {@code @MappingTarget entity}.
+     * Nếu use case cần đổi roles thì viết method riêng (vd: {@code updateRoles})
+     * dùng {@code entity.getRoles().clear()} rồi {@code addAll(reattachedRoles)}.
+     * <p>Hiện tại các use case sửa user (change-password) KHÔNG đổi roles, nên bỏ map
+     * là an toàn nhất.
      */
     @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "username", source = "username")
@@ -67,7 +77,5 @@ public interface UserMapper {
     @Mapping(target = "passwordHash", source = "passwordHash")
     @Mapping(target = "fullName", source = "fullName")
     @Mapping(target = "accountStatus", source = "accountStatus")
-    @Mapping(target = "roles", source = "roles")
-    @Mapping(target = "directPermissions", source = "directPermissions")
     void updateEntity(User domain, @MappingTarget UserEntity entity);
 }

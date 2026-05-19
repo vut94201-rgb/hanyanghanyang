@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,19 +48,21 @@ public class UserRepositoryAdapter implements UserRepository {
     public User save(User user) {
         UserEntity entity;
         if (user.getId() == null) {
+            // INSERT path: build entity mới từ domain, reattach roles/perms
+            // để Hibernate xem chúng là managed (tránh duplicate insert role/perm).
             entity = mapper.toEntity(user);
+            entity.setRoles(reattachRoles(entity.getRoles()));
+            entity.setDirectPermissions(reattachPermissions(entity.getDirectPermissions()));
         } else {
-            // Load entity hiện tại để giữ audit fields, version, và tránh "detached"
-            // Note: dùng findWithAuthorities để load đủ collection - tránh case
-            // updateEntity overwrite collection rỗng vào collection có data.
+            // UPDATE path: load managed entity, mapper update field scalar
+            // (username, password, ...) - KHÔNG động vào roles/directPermissions
+            // (xem UserMapper.updateEntity javadoc). Giữ nguyên managed collection
+            // để tránh "Detached entity ... uninitialized version" do auto-flush.
             entity = jpaRepository.findWithAuthoritiesById(user.getId())
                     .orElseThrow(() -> new IllegalStateException(
                             "User not found for update, id=" + user.getId()));
             mapper.updateEntity(user, entity);
         }
-        // Reattach roles và directPermissions để chúng là managed entities
-        entity.setRoles(reattachRoles(entity.getRoles()));
-        entity.setDirectPermissions(reattachPermissions(entity.getDirectPermissions()));
 
         UserEntity saved = jpaRepository.save(entity);
         return mapper.toDomain(saved);
@@ -107,7 +110,7 @@ public class UserRepositoryAdapter implements UserRepository {
     // ---- Reattach helpers ----
 
     private Set<RoleEntity> reattachRoles(Set<RoleEntity> input) {
-        if (input == null || input.isEmpty()) return new HashSet<>();
+        if (Objects.isNull(input)  || input.isEmpty()) return new HashSet<>();
         Set<Long> ids = input.stream()
                 .map(RoleEntity::getId)
                 .filter(java.util.Objects::nonNull)
@@ -117,7 +120,7 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     private Set<PermissionEntity> reattachPermissions(Set<PermissionEntity> input) {
-        if (input == null || input.isEmpty()) return new HashSet<>();
+        if (Objects.isNull(input) || input.isEmpty()) return new HashSet<>();
         Set<Long> ids = input.stream()
                 .map(PermissionEntity::getId)
                 .filter(java.util.Objects::nonNull)
