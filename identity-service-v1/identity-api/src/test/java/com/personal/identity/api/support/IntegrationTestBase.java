@@ -74,6 +74,62 @@ public abstract class IntegrationTestBase {
      */
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
+        if (useExternalServices()) {
+            registerExternalServiceProperties(registry);
+        } else {
+            registerContainerProperties(registry);
+        }
+
+        // JWT secret cho test - khác với prod, vẫn 384 bit base64.
+        registry.add("app.jwt.secret",
+                () -> "dGVzdC1zZWNyZXQtZm9yLWludGVncmF0aW9uLXRlc3RzLW9ubHktbm90LWZvci1wcm9k");
+        registry.add("app.geoip.fail-on-missing-database", () -> false);
+    }
+
+    private static boolean useExternalServices() {
+        return Boolean.parseBoolean(propertyOrEnv(
+                "identity.test.external-services",
+                "IDENTITY_TEST_EXTERNAL_SERVICES",
+                "false"));
+    }
+
+    private static String propertyOrEnv(String propertyName, String envName, String defaultValue) {
+        String propertyValue = System.getProperty(propertyName);
+        if (propertyValue != null && !propertyValue.isBlank()) {
+            return propertyValue;
+        }
+        String envValue = System.getenv(envName);
+        if (envValue != null && !envValue.isBlank()) {
+            return envValue;
+        }
+        return defaultValue;
+    }
+
+    private static void registerExternalServiceProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", () -> propertyOrEnv(
+                "spring.datasource.url",
+                "SPRING_DATASOURCE_URL",
+                "jdbc:oracle:thin:@localhost:1521/FREEPDB1"));
+        registry.add("spring.datasource.username", () -> propertyOrEnv(
+                "spring.datasource.username",
+                "SPRING_DATASOURCE_USERNAME",
+                "identity"));
+        registry.add("spring.datasource.password", () -> propertyOrEnv(
+                "spring.datasource.password",
+                "SPRING_DATASOURCE_PASSWORD",
+                "identity123"));
+        registry.add("spring.datasource.driver-class-name", () -> "oracle.jdbc.OracleDriver");
+        registry.add("spring.data.redis.host", () -> propertyOrEnv(
+                "spring.data.redis.host",
+                "SPRING_DATA_REDIS_HOST",
+                "localhost"));
+        registry.add("spring.data.redis.port", () -> propertyOrEnv(
+                "spring.data.redis.port",
+                "SPRING_DATA_REDIS_PORT",
+                "6379"));
+    }
+
+    private static void registerContainerProperties(DynamicPropertyRegistry registry) {
         var oracle = OracleTestContainer.getInstance();
         registry.add("spring.datasource.url", oracle::getJdbcUrl);
         registry.add("spring.datasource.username", oracle::getUsername);
@@ -82,11 +138,6 @@ public abstract class IntegrationTestBase {
 
         registry.add("spring.data.redis.host", RedisTestContainer::getHost);
         registry.add("spring.data.redis.port", RedisTestContainer::getPort);
-
-        // JWT secret cho test - khác với prod, vẫn 384 bit base64.
-        registry.add("app.jwt.secret",
-                () -> "dGVzdC1zZWNyZXQtZm9yLWludGVncmF0aW9uLXRlc3RzLW9ubHktbm90LWZvci1wcm9k");
-        registry.add("app.geoip.fail-on-missing-database", () -> false);
     }
 
     /**

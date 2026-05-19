@@ -38,7 +38,6 @@ public final class OracleTestContainer {
         // CI thường tắt reuse - mỗi run có container riêng.
         CONTAINER = new OracleContainer(
                 DockerImageName.parse("gvenzl/oracle-free:23-slim-faststart"))
-                .withDatabaseName("FREEPDB1")
                 .withUsername("identity")
                 .withPassword("identity123")
                 .withReuse(true);

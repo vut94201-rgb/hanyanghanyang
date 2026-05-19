@@ -147,7 +147,7 @@ class AuthRegisterLoginTest extends IntegrationTestBase {
                 String.class);
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(resp.getBody()).contains("USER.INVALID_CREDENTIALS");
+        assertThat(resp.getBody()).contains("AUTH.INVALID_CREDENTIALS");
     }
 
     @Test
@@ -161,7 +161,7 @@ class AuthRegisterLoginTest extends IntegrationTestBase {
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         // Cùng error code với login sai password - không leak "user không tồn tại"
-        assertThat(resp.getBody()).contains("USER.INVALID_CREDENTIALS");
+        assertThat(resp.getBody()).contains("AUTH.INVALID_CREDENTIALS");
     }
 
     // ============================================================

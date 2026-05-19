@@ -138,7 +138,7 @@ class AuthChangePasswordTest extends IntegrationTestBase {
                 new ChangePasswordRequest("WrongOldPass", "NewPass@456"), String.class);
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(resp.getBody()).contains("USER.INVALID_CREDENTIALS");
+        assertThat(resp.getBody()).contains("AUTH.INVALID_CREDENTIALS");
     }
 
     @Test
