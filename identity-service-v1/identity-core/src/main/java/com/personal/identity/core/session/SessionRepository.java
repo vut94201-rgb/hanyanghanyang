@@ -3,6 +3,7 @@ package com.personal.identity.core.session;
 import java.util.List;
 import java.util.Optional;
 
+
 /**
  * <b>PORT</b> cho Session persistence.
  */
@@ -20,9 +21,22 @@ public interface SessionRepository {
 
     /**
      * Revoke tất cả session ACTIVE của user, TRỪ session hiện tại.
-     * Dùng cho "logout from all other devices".
+     * Dùng cho "logout from all other devices" trong change-password flow.
      *
      * @return số session bị revoke
      */
     int revokeAllOtherSessions(Long userId, String currentSessionId, RevokedReason reason);
+
+    /**
+     * Revoke TẤT CẢ session ACTIVE của user (kể cả session hiện tại).
+     * Dùng cho endpoint {@code POST /logout-all} - user chủ động kick mọi device,
+     * bao gồm chính thiết bị đang gửi request. Sau API này user phải login lại.
+     *
+     * <p><b>Khác với {@link #revokeAllOtherSessions}:</b> không có tham số
+     * {@code currentSessionId} để loại trừ. Đây là điểm khác biệt cốt lõi giữa
+     * "đổi password" (giữ session hiện tại) và "logout all" (revoke hết).
+     *
+     * @return số session bị revoke
+     */
+    int revokeAllByUserId(Long userId, RevokedReason reason);
 }

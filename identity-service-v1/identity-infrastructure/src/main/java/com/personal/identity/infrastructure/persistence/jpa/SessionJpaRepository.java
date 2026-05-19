@@ -39,4 +39,22 @@ public interface SessionJpaRepository extends JpaRepository<SessionEntity, Strin
             @Param("currentSessionId") String currentSessionId,
             @Param("reason") RevokedReason reason,
             @Param("now") Instant now);
+
+    /**
+     * Bulk revoke TẤT CẢ session ACTIVE của user (không loại trừ ai).
+     * Dùng cho logout-all.
+     */
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE SessionEntity s
+            SET s.sessionStatus = com.personal.identity.core.session.SessionStatus.REVOKED,
+                s.revokedAt = :now,
+                s.revokedReason = :reason
+            WHERE s.userId = :userId
+              AND s.sessionStatus = com.personal.identity.core.session.SessionStatus.ACTIVE
+            """)
+    int revokeAllByUserId(
+            @Param("userId") Long userId,
+            @Param("reason") RevokedReason reason,
+            @Param("now") Instant now);
 }

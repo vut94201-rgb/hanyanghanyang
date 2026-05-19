@@ -123,4 +123,20 @@ public class UseCaseConfig {
                 refreshTokenRepository
         );
     }
+
+    @Bean
+    public RevokeSessionUseCase revokeSessionUseCase(
+            SessionRepository sessionRepository,
+            RefreshTokenRepository refreshTokenRepository
+    ) {
+        return new RevokeSessionUseCase(sessionRepository, refreshTokenRepository);
+    }
+
+    @Bean
+    public LogoutAllUseCase logoutAllUseCase(
+            SessionRepository sessionRepository,
+            RefreshTokenRepository refreshTokenRepository
+    ) {
+        return new LogoutAllUseCase(sessionRepository, refreshTokenRepository);
+    }
 }

@@ -3,8 +3,11 @@ package com.personal.identity.api.exception;
 
 
 
+
+
 import com.personal.identity.api.dto.ErrorResponse;
 import com.personal.identity.core.role.RoleNotFoundException;
+import com.personal.identity.core.session.SessionAccessDeniedException;
 import com.personal.identity.core.session.SessionNotFoundException;
 import com.personal.identity.core.shared.exception.DomainException;
 import com.personal.identity.core.token.InvalidRefreshTokenException;
@@ -33,6 +36,7 @@ import java.util.List;
  *   <tr><td>InvalidCredentialsException</td><td>401</td><td>DEBUG</td></tr>
  *   <tr><td>InvalidRefreshTokenException</td><td>401</td><td>DEBUG</td></tr>
  *   <tr><td>TokenReuseDetectedException</td><td>401</td><td><b>WARN</b> (dấu hiệu tấn công)</td></tr>
+ *   <tr><td>SessionAccessDeniedException</td><td>403</td><td><b>WARN</b> (dấu hiệu IDOR)</td></tr>
  *   <tr><td>UserNotFoundException</td><td>404</td><td>DEBUG</td></tr>
  *   <tr><td>SessionNotFoundException</td><td>404</td><td>DEBUG</td></tr>
  *   <tr><td>RoleNotFoundException</td><td>500</td><td>ERROR (lỗi cấu hình hệ thống)</td></tr>
@@ -49,9 +53,9 @@ import java.util.List;
  * fail từ client - những thứ xảy ra hàng nghìn lần/ngày ở production. Log INFO/WARN
  * sẽ làm ngập log và che mất event thực sự quan trọng.
  *
- * <p><b>WARN cho dấu hiệu tấn công:</b> {@link TokenReuseDetectedException} là 1
- * trong số ít event đáng để log WARN - đây là dấu hiệu attacker đã có refresh token
- * và đang dùng. Worth keeping for forensic.
+ * <p><b>WARN cho dấu hiệu tấn công:</b> {@link TokenReuseDetectedException} và
+ * {@link SessionAccessDeniedException} là dấu hiệu attacker đang chủ động - worth
+ * keeping for forensic.
  *
  * <p><b>ERROR cho lỗi hệ thống:</b> {@link RoleNotFoundException} với role USER
  * mặc định bị thiếu = seed data sai. Đây là configuration issue cần fix ngay.
@@ -85,6 +89,23 @@ public class GlobalExceptionHandler {
         // Path đi kèm để correlate với access log.
         log.warn("Token reuse detected on path {}: {}", request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.UNAUTHORIZED, ex, request);
+    }
+
+    // ============================================================
+    // 403 - Authorization errors (authenticated nhưng không có quyền)
+    // ============================================================
+
+    /**
+     * IDOR attempt: user authenticated cố truy cập resource của user khác.
+     * Log WARN để monitoring/SIEM có thể alert nếu thấy pattern bất thường
+     * (vd: 1 user gửi 100 sessionId khác nhau trong 1 phút).
+     */
+    @ExceptionHandler(SessionAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleSessionAccessDenied(
+            SessionAccessDeniedException ex, HttpServletRequest request) {
+        log.warn("Session access denied (possible IDOR) on path {}: {}",
+                request.getRequestURI(), ex.getMessage());
+        return build(HttpStatus.FORBIDDEN, ex, request);
     }
 
     // ============================================================

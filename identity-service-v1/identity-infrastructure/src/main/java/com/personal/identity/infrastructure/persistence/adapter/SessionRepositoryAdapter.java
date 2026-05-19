@@ -76,4 +76,10 @@ public class SessionRepositoryAdapter implements SessionRepository {
         return jpaRepository.revokeAllOtherSessions(
                 userId, currentSessionId, reason, Instant.now());
     }
+
+    @Override
+    @Transactional
+    public int revokeAllByUserId(Long userId, RevokedReason reason) {
+        return jpaRepository.revokeAllByUserId(userId, reason, Instant.now());
+    }
 }
