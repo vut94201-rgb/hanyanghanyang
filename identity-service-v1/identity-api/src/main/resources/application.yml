@@ -34,11 +34,15 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP
+
         dialect: org.hibernate.dialect.OracleDialect
         # Format SQL khi log (dev). Production tắt qua application-prod.yml nếu cần.
         format_sql: true
         # Batch insert/update hoạt động với sequence allocationSize=50
         jdbc:
+          time_zone: UTC
           batch_size: 50
         order_inserts: true
         order_updates: true
