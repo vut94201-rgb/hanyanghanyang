@@ -98,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: identity-api-jar
-          path: ${{ env.WORKDIR }}/identity-api/target/identity-api-*.jar
+          path: ${{ env.WORKDIR }}/identity-api/target/identity-api.jar
           retention-days: 14
 
   # ---------------------------------------------------------------------------
