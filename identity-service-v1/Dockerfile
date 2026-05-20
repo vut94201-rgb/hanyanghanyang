@@ -94,12 +94,17 @@ COPY identity-api/src ./identity-api/src
 RUN --mount=type=cache,target=/root/.m2/repository \
     mvn -B clean package -DskipTests -pl identity-api -am
 
-# Verify JAR tồn tại + extract version để rename consistent
+# Verify JAR tồn tại + đổi tên thành /build/app.jar để stage runtime copy gọn.
+# Lưu ý: pom.xml có <finalName>identity-api</finalName> → tên file là
+# "identity-api.jar" (KHÔNG có version suffix). Đừng dùng glob "identity-api-*.jar"
+# vì không match — sẽ fail ngay step này.
+# spring-boot-maven-plugin còn sinh file "identity-api.jar.original" (JAR gốc trước
+# khi repackage fat) — ta KHÔNG cần file đó, chỉ lấy fat JAR.
 RUN set -eux; \
     cd identity-api/target; \
     ls -lh; \
-    test -f identity-api-*.jar; \
-    cp identity-api-*.jar /build/app.jar
+    test -f identity-api.jar; \
+    cp identity-api.jar /build/app.jar
 
 # -----------------------------------------------------------------------------
 # Stage 2: runtime
