@@ -139,4 +139,15 @@ public class UseCaseConfig {
     ) {
         return new LogoutAllUseCase(sessionRepository, refreshTokenRepository);
     }
+
+    @Bean
+    public com.personal.identity.core.service.AdminUserUseCase adminUserUseCase(
+            UserRepository userRepository,
+            com.personal.identity.core.role.RoleRepository roleRepository,
+            SessionRepository sessionRepository,
+            com.personal.identity.core.audit.AuditLogRepository auditLogRepository
+    ) {
+        return new com.personal.identity.core.service.AdminUserUseCase(
+                userRepository, roleRepository, sessionRepository, auditLogRepository);
+    }
 }
