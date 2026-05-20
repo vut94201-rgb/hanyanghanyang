@@ -1,0 +1,66 @@
+# =============================================================================
+# .dockerignore — không bake các thứ này vào docker context
+# =============================================================================
+# Mỗi file trong context được gửi sang daemon → context to = build chậm + ảnh hưởng cache.
+# Giữ context tối thiểu: pom.xml + src/.
+
+# Build output
+**/target/
+**/build/
+**/out/
+
+# Maven / Gradle cache (lỡ ai chạy mvn local ở repo)
+.m2/
+.gradle/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+**/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
+.factorypath
+.apt_generated/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docker / Podman
+Dockerfile
+.dockerignore
+podman-compose.yml
+docker-compose.yml
+docker/
+
+# CI
+.github/
+
+# Doc
+*.md
+docs/
+HELP.md
+
+# Test outputs
+**/surefire-reports/
+**/failsafe-reports/
+
+# Env files (KHÔNG bake secret vào image)
+.env
+.env.*
+
+# Scripts không cần lúc build
+scripts/
