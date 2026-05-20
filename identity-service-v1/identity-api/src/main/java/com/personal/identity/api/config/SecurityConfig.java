@@ -1,15 +1,15 @@
 package com.personal.identity.api.config;
 
+import com.personal.identity.api.ratelimit.RateLimitFilter;
 import com.personal.identity.api.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -19,53 +19,41 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * <h2>Endpoint matchers</h2>
  * <table>
  *   <tr><th>Path</th><th>Method</th><th>Auth</th></tr>
- *   <tr><td>/api/v1/auth/register</td><td>POST</td><td>PUBLIC</td></tr>
- *   <tr><td>/api/v1/auth/login</td><td>POST</td><td>PUBLIC</td></tr>
- *   <tr><td>/api/v1/auth/refresh</td><td>POST</td><td>PUBLIC</td></tr>
+ *   <tr><td>/api/v1/auth/register</td><td>POST</td><td>PUBLIC (có rate limit)</td></tr>
+ *   <tr><td>/api/v1/auth/login</td><td>POST</td><td>PUBLIC (có rate limit)</td></tr>
+ *   <tr><td>/api/v1/auth/refresh</td><td>POST</td><td>PUBLIC (có rate limit)</td></tr>
  *   <tr><td>/api/v1/auth/logout</td><td>POST</td><td>AUTH</td></tr>
  *   <tr><td>/api/v1/auth/change-password</td><td>POST</td><td>AUTH</td></tr>
  *   <tr><td>/api/health</td><td>*</td><td>PUBLIC</td></tr>
- *   <tr><td>/v3/api-docs/**, /swagger-ui/**</td><td>*</td><td>PUBLIC</td></tr>
+ *   <tr><td>/v3/api-docs/**, /swagger-ui/**</td><td>*</td><td>PUBLIC (tắt ở prod)</td></tr>
  *   <tr><td>Còn lại</td><td>*</td><td>AUTH</td></tr>
  * </table>
  *
- * <h2>Filter chain</h2>
+ * <h2>Filter chain order</h2>
  *
- * <p>{@link JwtAuthenticationFilter} đặt TRƯỚC {@link UsernamePasswordAuthenticationFilter}:
- * <ul>
- *   <li>Filter của ta chạy đầu - extract JWT, set Authentication nếu valid.</li>
- *   <li>Filter Spring built-in không dùng (ta không có form login).</li>
- *   <li>Đặt before UsernamePasswordAuthenticationFilter là pattern chuẩn cho JWT
- *       trong Spring Security 6.</li>
- * </ul>
+ * <pre>
+ *   1. RateLimitFilter           ← chặn brute force trước khi tốn CPU parse JWT
+ *   2. JwtAuthenticationFilter   ← validate JWT, set Authentication
+ *   3. UsernamePasswordAuthenticationFilter (Spring built-in, không dùng)
+ *   4. ... rest of chain
+ * </pre>
  *
- * <h2>Stateless</h2>
+ * <p>RateLimitFilter là optional (chỉ tạo khi {@code app.rate-limit.enabled=true}).
+ * Dùng {@link ObjectProvider} để inject "có thể null" - filter không có thì
+ * skip register, app vẫn chạy.
  *
- * <p>{@code STATELESS} = không tạo HttpSession server-side. Mọi state nằm trong
- * JWT. Spring sẽ không sinh JSESSIONID cookie, không lưu SecurityContext giữa
- * các request. Mỗi request đi qua filter chain mới đầu.
+ * <h2>Stateless / CSRF / @Bean PasswordEncoder</h2>
  *
- * <h2>CSRF</h2>
- *
- * <p>Disable. CSRF chỉ cần cho session-based auth (cookie). JWT trong header
- * không bị CSRF attack vì header phải được set bởi JS - mà cross-origin JS
- * không tự thêm header tuỳ ý vào request được (đó là điểm khác cookie).
- *
- * <h2>{@code @Bean PasswordEncoder} đã xóa</h2>
- *
- * <p>Trước đây có bean Spring's {@code PasswordEncoder} - đã xóa vì:
- * <ul>
- *   <li>Không có code nào inject - core dùng port riêng
- *       {@code core.security.PasswordEncoder} (qua {@code BCryptPasswordEncoderAdapter}).</li>
- *   <li>Spring Security không tự inject vì ta không dùng {@code DaoAuthenticationProvider}.</li>
- *   <li>Giữ lại sẽ confuse người đọc code.</li>
- * </ul>
+ * <p>STATELESS = không tạo HttpSession. CSRF disable vì JWT không bị CSRF.
+ * Bean PasswordEncoder đã xoá ở phiên bản trước - core dùng port riêng
+ * {@code core.security.PasswordEncoder} qua {@code BCryptPasswordEncoderAdapter}.
  */
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ObjectProvider<RateLimitFilter> rateLimitFilterProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -88,14 +76,21 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
 
-                        // Còn lại phải authenticated (gồm logout, change-password, future API)
+                        // Còn lại phải authenticated
                         .anyRequest().authenticated()
                 )
-                // Tắt form login + http basic - chỉ dùng JWT.
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                // Chèn JWT filter
+                // JWT filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // Rate limit filter (optional) - đặt TRƯỚC JWT filter trong chain.
+        // ObjectProvider.ifAvailable: khi @ConditionalOnProperty tắt rate limit,
+        // bean không tồn tại → ifAvailable không chạy → app start bình thường.
+        RateLimitFilter rateLimitFilter = rateLimitFilterProvider.getIfAvailable();
+        if (rateLimitFilter != null) {
+            http.addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class);
+        }
 
         return http.build();
     }
