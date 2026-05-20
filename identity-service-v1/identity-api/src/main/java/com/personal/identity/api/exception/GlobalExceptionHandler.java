@@ -217,6 +217,28 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Spring Security 6 throw {@link org.springframework.security.authorization.AuthorizationDeniedException}
+     * khi {@code @PreAuthorize} fail. Default exception resolver coi đây là Exception
+     * generic → 500. Ta override → 403.
+     *
+     * <p>Note: phải đứng TRƯỚC fallback {@code Exception.class} để Spring match
+     * exception class cụ thể hơn trước.
+     */
+    @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(
+            org.springframework.security.authorization.AuthorizationDeniedException ex,
+            HttpServletRequest request
+    ) {
+        log.debug("Authorization denied on {}: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse body = ErrorResponse.of(
+                "FORBIDDEN",
+                "Bạn không có quyền thực hiện hành động này.",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    /**
      * Catch-all cuối cùng. KHÔNG để stacktrace leak ra response - chỉ trả message
      * generic. Stacktrace ở server log (level ERROR) để debug.
      */
