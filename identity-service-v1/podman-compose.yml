@@ -2,11 +2,14 @@
 # Chạy: podman-compose up -d
 # Dừng: podman-compose down
 # Xem log: podman-compose logs -f <service-name>
+# Build lại app: podman-compose build app
 #
 # LƯU Ý PODMAN:
 # - Podman mặc định rootless, port < 1024 cần config riêng (1521/6379/8080 đều OK)
 # - Volume mount với SELinux trên Linux có thể cần thêm ":Z" (ví dụ ./data:/data:Z)
 # - Network giữa các container dùng tên service làm hostname (oracle-free, redis)
+# - Service "app" mặc định comment OUT khi học để chạy app từ IDE (hot-reload).
+#   Bật khi muốn full-stack test trong container hoặc deploy demo.
 
 version: "3.8"
 
@@ -57,32 +60,51 @@ services:
     networks:
       - identity-net
 
-  # App service - bỏ comment khi bạn đã có Dockerfile và muốn chạy cả app trong container.
-  # Giai đoạn dev nên chạy app từ IDE để hot-reload, chỉ chạy oracle + redis trong podman.
-  #
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: identity-app
-  #   depends_on:
-  #     oracle-free:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     SPRING_PROFILES_ACTIVE: docker
-  #     # JDBC URL dùng service name làm host (không phải localhost!)
-  #     SPRING_DATASOURCE_URL: "jdbc:oracle:thin:@oracle-free:1521/FREEPDB1"
-  #     SPRING_DATASOURCE_USERNAME: identity
-  #     SPRING_DATASOURCE_PASSWORD: identity123
-  #     SPRING_DATA_REDIS_HOST: redis
-  #     SPRING_DATA_REDIS_PORT: 6379
-  #   restart: unless-stopped
-  #   networks:
-  #     - identity-net
+  # App service — build từ Dockerfile cùng repo.
+  # Bỏ profile khỏi env list khi dev (để chạy từ IDE thay vì container).
+  # Bật service này khi muốn smoke test full-stack: podman-compose up -d --build app
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: identity-service:latest
+    container_name: identity-app
+    depends_on:
+      oracle-free:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # Profile prod → đòi hết env var dưới phải set tường minh, không có default
+      SPRING_PROFILES_ACTIVE: prod
+      # JDBC URL dùng SERVICE NAME làm host (không phải localhost vì cùng pod/network!)
+      SPRING_DATASOURCE_URL: "jdbc:oracle:thin:@oracle-free:1521/FREEPDB1"
+      SPRING_DATASOURCE_USERNAME: identity
+      SPRING_DATASOURCE_PASSWORD: identity123
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_DATA_REDIS_PASSWORD: ""
+      # JWT_SECRET: BẮT BUỘC set qua env file hoặc shell. KHÔNG hard-code ở đây.
+      # Tạo file .env cùng folder: JWT_SECRET=<base64-48-bytes>
+      JWT_SECRET: ${JWT_SECRET}
+      # GeoIP: tạm cho phép thiếu để smoke test mà không cần tải .mmdb trước.
+      # Production thật phải set false + mount file thật vào /var/lib/identity/geoip.
+      GEOIP_FAIL_ON_MISSING: "false"
+      GEOIP_DATABASE_PATH: /var/lib/identity/geoip/GeoLite2-City.mmdb
+    volumes:
+      # Mount thư mục geoip (rỗng cũng được nếu FAIL_ON_MISSING=false)
+      - ./docker/geoip:/var/lib/identity/geoip:ro,z
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - identity-net
 
 networks:
   identity-net:
