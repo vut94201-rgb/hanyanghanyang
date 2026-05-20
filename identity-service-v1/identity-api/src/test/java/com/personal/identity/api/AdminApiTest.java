@@ -91,12 +91,13 @@ class AdminApiTest extends IntegrationTestBase {
         assertThat(body.get("accountStatus").asText()).isEqualTo("DISABLED");
 
         // Session cũ phải bị revoke → access token vẫn dùng được tới khi expire,
-        // nhưng JwtAuthenticationFilter check session active → /me phải 401.
+        // nhưng JwtAuthenticationFilter check session active → /me phải 403.
+        // Spring Security 6 default khi filter skip set Authentication.
         HttpHeaders userHeaders = bearerHeaders(userAuth.accessToken());
         HttpEntity<Void> userRequest = new HttpEntity<>(userHeaders);
         ResponseEntity<String> meResp = restTemplate.exchange(
                 "/api/v1/auth/me", HttpMethod.GET, userRequest, String.class);
-        assertThat(meResp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(meResp.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
