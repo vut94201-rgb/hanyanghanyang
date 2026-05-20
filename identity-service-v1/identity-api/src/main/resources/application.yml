@@ -5,6 +5,7 @@
 # cụ thể đọc từ ENV VAR (cú pháp ${VAR:default}).
 #
 # Profile dev override file này bằng application-dev.yml.
+# Profile prod override file này bằng application-prod.yml.
 # Khi không set spring.profiles.active, mặc định KHÔNG có profile - tức là
 # app sẽ ĐÒI các env var bắt buộc (JWT_SECRET, v.v.) trước khi start.
 # =============================================================================
@@ -37,8 +38,10 @@ spring:
         type:
           preferred_instant_jdbc_type: TIMESTAMP
 
-        dialect: org.hibernate.dialect.OracleDialect
-        # Format SQL khi log (dev). Production tắt qua application-prod.yml nếu cần.
+        # KHÔNG set hibernate.dialect tường minh — Hibernate 6 tự detect
+        # OracleDialect từ JDBC URL "jdbc:oracle:*". Set tay sẽ warn:
+        # "OracleDialect does not need to be specified explicitly".
+        # Format SQL khi log (dev). Production tắt qua application-prod.yml.
         format_sql: true
         # Batch insert/update hoạt động với sequence allocationSize=50
         jdbc:
@@ -97,6 +100,7 @@ app:
     fail-on-missing-database: ${GEOIP_FAIL_ON_MISSING:false}
 
 # ---- springdoc OpenAPI (Swagger UI) ----
+# Default profile + dev: bật. Prod profile override = false.
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

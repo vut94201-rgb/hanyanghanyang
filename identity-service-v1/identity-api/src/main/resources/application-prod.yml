@@ -1,0 +1,168 @@
+# =============================================================================
+# application-prod.yml — cấu hình PRODUCTION PROFILE
+# =============================================================================
+# Kích hoạt: chạy app với -Dspring.profiles.active=prod
+#   hoặc env var SPRING_PROFILES_ACTIVE=prod
+#
+# Triết lý chung:
+#   1) KHÔNG có secret hard-code. Mọi giá trị nhạy cảm đọc từ env var, không
+#      có default — nếu thiếu, app fail-fast lúc start (đúng ý đồ "fail loud").
+#   2) Giảm bề mặt tấn công: tắt Swagger / API docs, tắt verbose log.
+#   3) Sẵn sàng chạy sau reverse proxy / load balancer (Nginx, ALB, ...).
+#   4) GeoIP fail-fast: production phải có .mmdb thật, không cho phép thiếu.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Datasource — username / password / URL BẮT BUỘC từ env
+# -----------------------------------------------------------------------------
+# Vì sao bỏ default:
+#   - Nếu có default, dev quên set env var thì app vẫn start được nhưng kết nối
+#     sai DB. Ở prod điều đó cực kỳ nguy hiểm (vd: dính nhầm DB staging).
+#   - Spring Boot khi gặp ${VAR} không default sẽ throw IllegalArgumentException
+#     "Could not resolve placeholder" — đúng kiểu fail-fast ta muốn.
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      # Prod thường nhiều traffic hơn dev — bump pool lên một chút.
+      # Nguyên tắc tinh chỉnh: pool size ≈ (số core DB × 2) + số disk spindle.
+      # Số 20 là điểm bắt đầu hợp lý, theo dõi p99 connection-wait rồi điều chỉnh.
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:5}
+      connection-timeout: 30000
+      pool-name: identity-hikari-pool
+
+  jpa:
+    properties:
+      hibernate:
+        # Prod TUYỆT ĐỐI không format SQL (tốn CPU, log to gấp đôi).
+        format_sql: false
+        # KHÔNG show_sql ở prod — bí mật query khỏi log.
+        show_sql: false
+
+  # ---- Redis ----
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      # Mật khẩu Redis bắt buộc nếu Redis bật AUTH. Để không default — nếu Redis
+      # không bật AUTH thì set REDIS_PASSWORD="" (empty) tường minh ở env.
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+      timeout: 2000ms
+
+# -----------------------------------------------------------------------------
+# Server — chạy sau reverse proxy
+# -----------------------------------------------------------------------------
+# Vì sao forward-headers-strategy=framework:
+#   - Nginx/ALB/Cloudflare đặt X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host
+#     khi forward request.
+#   - Mặc định Spring KHÔNG đọc các header này → request.getRemoteAddr() trả về
+#     IP của proxy, không phải IP client thật.
+#   - Hệ quả: GeoLocationResolver và UserAgentParser sẽ ghi nhận sai IP →
+#     fingerprint session sai → suspicious-login detection vô tác dụng.
+#   - "framework" để Spring tự xử lý qua ForwardedHeaderFilter (KHÔNG dùng
+#     "native" vì native chỉ dùng được với Tomcat AJP — ta đang dùng HTTP).
+#
+# CẢNH BÁO BẢO MẬT:
+#   Chỉ bật khi BIẾT CHẮC có proxy phía trước. Nếu không, attacker có thể tự
+#   gửi X-Forwarded-For: 1.2.3.4 để fake IP. Reverse proxy phải strip
+#   X-Forwarded-* từ client và set lại bằng IP thật.
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  # Tắt header "Server: Apache-Coyote/..." — đỡ lộ tech stack.
+  tomcat:
+    remoteip:
+      # Header để đọc IP client (mặc định X-Forwarded-For — chỉ ghi rõ cho minh bạch).
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
+  servlet:
+    # Session cookie — dù app stateless, vẫn set Secure+HttpOnly phòng trường
+    # hợp framework hay filter nào đó tạo session bất ngờ.
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: strict
+
+# -----------------------------------------------------------------------------
+# App config — JWT secret + GeoIP path BẮT BUỘC
+# -----------------------------------------------------------------------------
+app:
+  jwt:
+    # Không default — nếu thiếu app fail-fast. Sinh bằng:
+    #   openssl rand -base64 48
+    secret: ${JWT_SECRET}
+    issuer: ${JWT_ISSUER:identity-service}
+    # TTL có default an toàn — ngắn cho access token, vừa phải cho refresh.
+    access-token-ttl-minutes: ${JWT_ACCESS_TOKEN_TTL_MINUTES:15}
+    refresh-token-ttl-days: ${JWT_REFRESH_TOKEN_TTL_DAYS:30}
+
+  geoip:
+    # Prod phải có file .mmdb thật — tải bằng scripts/download-geolite2.sh
+    # và mount vào container ở đường dẫn này.
+    database-path: ${GEOIP_DATABASE_PATH:/var/lib/identity/geoip/GeoLite2-City.mmdb}
+    # Bật fail-fast: thiếu file → app không start. Đảm bảo audit log luôn có
+    # geo data ở prod, không có chuyện "tự dưng GeoLocation.empty()".
+    fail-on-missing-database: ${GEOIP_FAIL_ON_MISSING:true}
+
+# -----------------------------------------------------------------------------
+# SpringDoc — TẮT HOÀN TOÀN ở prod
+# -----------------------------------------------------------------------------
+# Vì sao tắt:
+#   - /v3/api-docs + /swagger-ui là "bản đồ" toàn bộ endpoint cho attacker
+#     enumerate tham số, validation rule, error code.
+#   - Internal API tài liệu nên publish riêng (Confluence / Postman collection
+#     / Redoc tĩnh build lúc CI), KHÔNG serve từ production app.
+#   - SecurityConfig hiện đã permitAll cho /v3/api-docs/** + /swagger-ui/** —
+#     khi springdoc disabled, các path đó trả 404 dù matcher cho phép, không
+#     cần sửa SecurityConfig.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# -----------------------------------------------------------------------------
+# Management / Actuator — chỉ expose health, không lộ env / beans / heapdump
+# -----------------------------------------------------------------------------
+# (Cấu hình defensive — nếu sau này có thêm spring-boot-starter-actuator,
+#  file này đã chốt sẵn để không lộ thông tin nhạy cảm.)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+        exclude: env,beans,heapdump,threaddump,configprops,mappings
+  endpoint:
+    health:
+      # KHÔNG show-details=always — chỉ show khi caller có quyền (mặc định never).
+      show-details: never
+      show-components: never
+  info:
+    env:
+      enabled: false
+
+# -----------------------------------------------------------------------------
+# Logging — INFO mặc định, không log SQL parameter (chứa password / token)
+# -----------------------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    com.personal.identity: INFO
+    # TUYỆT ĐỐI không bật TRACE/DEBUG cho jdbc.bind ở prod — sẽ log raw
+    # password / refresh-token vào file log.
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+    # Tắt log "Generated security password" — đã exclude UserDetailsServiceAutoConfiguration
+    # nên dòng này không xuất hiện, nhưng giữ cho phòng tuyến thứ hai.
+    org.springframework.security: INFO
+  pattern:
+    # Pattern gọn, có traceId nếu sau này thêm Micrometer Tracing.
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"

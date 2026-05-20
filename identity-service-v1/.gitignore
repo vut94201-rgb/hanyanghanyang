@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+# Patch — thêm vào .gitignore hiện tại của repo
+# (nếu đã có entry tương đương thì bỏ qua)
+
+# MaxMind GeoLite2 database — KHÔNG commit (binary ~70MB, license MaxMind)
+docker/geoip/*.mmdb
+docker/geoip/*.tar.gz
+
+# Env file (nếu dùng dotenv style cho prod local test)
+.env
+.env.local
+.env.prod

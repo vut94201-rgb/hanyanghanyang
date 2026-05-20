@@ -77,7 +77,7 @@ class AuthChangePasswordTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("Sau change-password: session hiện tại GIỮ ACTIVE, session khác REVOKED")
+    @DisplayName("After change-password:  current session  keep ACTIVE, other session  REVOKED")
     void changePasswordKeepsCurrentSession() {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
         String username = "user_" + suffix;
