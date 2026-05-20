@@ -90,6 +90,16 @@
             <artifactId>jjwt-api</artifactId>
         </dependency>
 
+        <!--   Rate limiting: Bucket4j với Redis backend (Lettuce). Version pin ở parent pom.   -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-redis</artifactId>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
