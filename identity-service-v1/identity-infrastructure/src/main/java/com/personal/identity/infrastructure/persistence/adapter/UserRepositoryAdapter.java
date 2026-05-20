@@ -107,6 +107,19 @@ public class UserRepositoryAdapter implements UserRepository {
         jpaRepository.delete(entity);
     }
 
+    @Override
+    public java.util.List<User> findAll(int offset, int limit, com.personal.identity.core.user.UserStatus statusFilter) {
+        var pageable = org.springframework.data.domain.PageRequest.of(offset / limit, limit);
+        return jpaRepository.findPaginated(statusFilter, pageable).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long count(com.personal.identity.core.user.UserStatus statusFilter) {
+        return jpaRepository.countWithFilter(statusFilter);
+    }
+
     // ---- Reattach helpers ----
 
     private Set<RoleEntity> reattachRoles(Set<RoleEntity> input) {

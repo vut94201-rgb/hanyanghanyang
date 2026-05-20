@@ -155,6 +155,10 @@ public class User {
     public void activate() { this.accountStatus = UserStatus.ACTIVE; }
     public void lock() { this.accountStatus = UserStatus.LOCKED; }
 
+    public void replaceRoles(Set<Role> newRoles) {
+        this.roles = new HashSet<>(newRoles);
+    }
+
     public boolean canLogin() {
         return accountStatus == UserStatus.ACTIVE && !deleted;
     }

@@ -1,6 +1,7 @@
 package com.personal.identity.core.user;
 
 import java.util.Optional;
+import java.util.List;
 
 /**
  * <b>PORT</b> - interface mà infrastructure phải implement (qua
@@ -48,4 +49,8 @@ public interface UserRepository {
      * Sau khi gọi, các query mặc định sẽ không trả về user này nữa.
      */
     void softDelete(User user);
+
+    List<User> findAll(int offset, int limit, UserStatus statusFilter);
+
+    long count(UserStatus statusFilter);
 }

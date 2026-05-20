@@ -7,6 +7,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -49,6 +50,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * {@code core.security.PasswordEncoder} qua {@code BCryptPasswordEncoderAdapter}.
  */
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -75,6 +77,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+
+                        // Admin endpoints require authentication first, then method-level role checks.
+                        .requestMatchers("/api/v1/admin/**").authenticated()
 
                         // Còn lại phải authenticated
                         .anyRequest().authenticated()

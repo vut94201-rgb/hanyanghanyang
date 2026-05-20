@@ -15,5 +15,7 @@ public enum RevokedReason {
     /** User chủ động logout 1 device khác từ session list. */
     USER_ACTION,
     /** Session quá hạn tự nhiên. */
-    EXPIRED
+    EXPIRED,
+    /** Admin revoke session/user. */
+    ADMIN_REVOKED
 }

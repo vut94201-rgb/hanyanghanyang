@@ -1,9 +1,13 @@
 package com.personal.identity.infrastructure.persistence.jpa;
 
 import com.personal.identity.infrastructure.persistence.entity.UserEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -52,4 +56,17 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
     /** Tương tự nhưng lookup theo id - dùng trong JwtAuthenticationFilter. */
     @EntityGraph(attributePaths = {"roles", "roles.permissions", "directPermissions"})
     Optional<UserEntity> findWithAuthoritiesById(Long id);
+
+    @Query(
+            "SELECT u FROM UserEntity u WHERE (:status IS NULL OR u.accountStatus = :status) ORDER BY u.createdAt DESC"
+    )
+    List<UserEntity> findPaginated(
+            @Param("status") com.personal.identity.core.user.UserStatus status,
+            Pageable pageable
+    );
+
+    @Query(
+            "SELECT COUNT(u) FROM UserEntity u WHERE (:status IS NULL OR u.accountStatus = :status)"
+    )
+    long countWithFilter(@Param("status") com.personal.identity.core.user.UserStatus status);
 }
