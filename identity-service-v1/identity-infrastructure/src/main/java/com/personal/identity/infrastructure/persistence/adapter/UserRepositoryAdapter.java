@@ -62,6 +62,27 @@ public class UserRepositoryAdapter implements UserRepository {
                     .orElseThrow(() -> new IllegalStateException(
                             "User not found for update, id=" + user.getId()));
             mapper.updateEntity(user, entity);
+
+            // Sync role collection nếu domain user thay đổi role set (vd: admin gán role).
+            // So sánh role IDs ở domain vs entity managed - chỉ rebuild collection khi diff.
+            // Lý do tách logic: mapper.updateEntity giữ collection nguyên để tránh
+            // "REPLACE collection bug" của MapStruct, nhưng admin flow CẦN replace có chủ ý.
+            java.util.Set<Long> domainRoleIds = user.getRoles().stream()
+                    .map(com.personal.identity.core.role.Role::getId)
+                    .filter(java.util.Objects::nonNull)
+                    .collect(java.util.stream.Collectors.toSet());
+            java.util.Set<Long> managedRoleIds = entity.getRoles().stream()
+                    .map(com.personal.identity.infrastructure.persistence.entity.RoleEntity::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+            if (!domainRoleIds.equals(managedRoleIds)) {
+                // Clear + add - KHÔNG thay reference Set (Hibernate track collection theo
+                // identity của Set instance, replace bằng Set mới sẽ "orphan" collection
+                // gốc và gây UnsupportedOperationException trên PersistentSet).
+                entity.getRoles().clear();
+                entity.getRoles().addAll(
+                        new java.util.HashSet<>(roleJpaRepository.findAllById(domainRoleIds))
+                );
+            }
         }
 
         UserEntity saved = jpaRepository.save(entity);
