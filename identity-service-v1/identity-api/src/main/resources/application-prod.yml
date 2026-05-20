@@ -166,3 +166,33 @@ logging:
   pattern:
     # Pattern gọn, có traceId nếu sau này thêm Micrometer Tracing.
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+
+# =============================================================================
+# Rate Limit — production override
+# =============================================================================
+# Production chặt hơn dev. Giá trị này phù hợp cho dịch vụ B2C cỡ vừa.
+# Tinh chỉnh dựa trên metric thật: nếu p99 false positive cao thì nới rộng;
+# nếu thấy attack qua khe thì siết.
+app:
+  rate-limit:
+    enabled: true
+    login:
+      # Login: real user hiếm khi gõ sai password >3 lần liên tiếp. 5/phút là biên độ vừa đủ
+      # cho user lỗi typo mà block được brute force credential stuffing.
+      short-window-capacity: 5
+      short-window-duration: 1m
+      long-window-capacity: 50
+      long-window-duration: 1h
+    register:
+      # Register: siết chặt vì spam fake account.
+      short-window-capacity: 2
+      short-window-duration: 1m
+      long-window-capacity: 5
+      long-window-duration: 1h
+    refresh:
+      # Refresh: client-side auto-refresh thường gọi 1 lần/15 phút (theo access token TTL).
+      # 10/phút đủ cho user mở nhiều tab + có buffer cho retry.
+      short-window-capacity: 10
+      short-window-duration: 1m
+      long-window-capacity: 200
+      long-window-duration: 1h

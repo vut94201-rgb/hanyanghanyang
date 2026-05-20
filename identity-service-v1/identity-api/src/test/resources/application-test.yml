@@ -1,0 +1,9 @@
+# =============================================================================
+# Profile test — override khi chạy integration test
+# =============================================================================
+# Tắt rate-limit mặc định khi chạy 30 test cũ để khỏi 429 lung tung khi nhiều test
+# cùng dùng IP loopback.
+# Test mới riêng cho rate-limit (RateLimitTest) sẽ tự bật lại qua @TestPropertySource.
+app:
+  rate-limit:
+    enabled: false

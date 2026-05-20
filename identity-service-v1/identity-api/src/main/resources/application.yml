@@ -116,3 +116,38 @@ logging:
     # Tắt log "verbose" của Hibernate; bật tạm khi cần debug query.
     org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: INFO
+
+# =============================================================================
+# Rate Limit (Bucket4j + Redis)
+# =============================================================================
+# Áp dụng cho 3 endpoint public: /login, /register, /refresh.
+# Key:
+#   - login + register: IP client (sau khi resolve qua X-Forwarded-For nếu có proxy)
+#   - refresh: fallback IP (TODO: nâng cấp dùng token-hash prefix)
+#
+# Mỗi endpoint có 2 bandwidth:
+#   - shortWindow: chống burst (vài giây - 1 phút)
+#   - longWindow: chống slow drip (1 giờ)
+# Bucket consume 1 token mỗi request -> cả 2 bandwidth cùng trừ, hết cái nào
+# trước thì block.
+#
+# Dev: giá trị "thoải mái" để dev test thoải mái, không bị block khi reload UI.
+# Production: override trong application-prod.yml chặt hơn.
+app:
+  rate-limit:
+    enabled: true
+    login:
+      short-window-capacity: 5
+      short-window-duration: 1m
+      long-window-capacity: 20
+      long-window-duration: 1h
+    register:
+      short-window-capacity: 3
+      short-window-duration: 1m
+      long-window-capacity: 10
+      long-window-duration: 1h
+    refresh:
+      short-window-capacity: 10
+      short-window-duration: 1m
+      long-window-capacity: 100
+      long-window-duration: 1h

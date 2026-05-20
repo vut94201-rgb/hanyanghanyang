@@ -51,6 +51,7 @@ import java.util.UUID;
  * JWT secret được override bởi {@link TestSecretsConfig} bên dưới.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@org.springframework.test.context.ActiveProfiles("test")
 public abstract class IntegrationTestBase {
 
     @LocalServerPort
