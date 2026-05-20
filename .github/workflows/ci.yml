@@ -1,0 +1,158 @@
+# =============================================================================
+# .github/workflows/ci.yml — CI cho identity-service
+# =============================================================================
+# Trigger:
+#   - push lên main: build + test + báo cáo status
+#   - pull request vào main: chạy như push để chặn merge nếu fail
+#   - tag v*: ngoài build/test, build image + push lên GitHub Container Registry
+#
+# Job:
+#   1) test        — chạy 30 integration test (Testcontainers tự khởi Oracle + Redis)
+#   2) build-image — build docker image, chỉ chạy ở tag v*
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths:
+      - 'identity-service-v1/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'identity-service-v1/**'
+
+# Tránh chạy nhiều workflow đè nhau cho cùng branch — push mới cancel push cũ.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '21'
+  WORKDIR: identity-service-v1
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Build + Test
+  # ---------------------------------------------------------------------------
+  test:
+    name: Build + Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          # Temurin = Eclipse Adoptium, build OpenJDK chính thức.
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          # cache: maven → tự setup-java cache ~/.m2/repository theo pom.xml hash.
+          cache: maven
+
+      # Docker cần thiết để Testcontainers khởi Oracle + Redis ad-hoc trong test.
+      # ubuntu-latest đã có docker sẵn → chỉ verify.
+      - name: Verify Docker available (for Testcontainers)
+        run: docker version
+
+      # Pre-pull Oracle image trước khi chạy test → tránh tính vào timeout test.
+      # Image này ~3GB, lần đầu pull mất vài phút.
+      - name: Pre-pull Oracle image
+        run: docker pull gvenzl/oracle-free:23-slim-faststart
+
+      - name: Pre-pull Redis image
+        run: docker pull redis:7-alpine
+
+      - name: Maven install (all modules, skip tests)
+        working-directory: ${{ env.WORKDIR }}
+        run: mvn -B clean install -DskipTests -ntp
+        # -B = batch (non-interactive, gọn log)
+        # -ntp = no transfer progress (bớt log download)
+
+      - name: Run integration tests (Testcontainers mode)
+        working-directory: ${{ env.WORKDIR }}
+        # KHÔNG dùng external-services mode trong CI — không có Oracle localhost.
+        # Testcontainers sẽ tự khởi Oracle + Redis trong docker engine của runner.
+        run: mvn -B -pl identity-api test -ntp
+
+      - name: Upload test reports
+        if: always()  # upload kể cả khi test fail để debug
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: ${{ env.WORKDIR }}/identity-api/target/surefire-reports/
+          retention-days: 7
+
+      - name: Build fat JAR
+        working-directory: ${{ env.WORKDIR }}
+        # Chạy package thay vì install — không cần đẩy local repo nữa.
+        run: mvn -B -pl identity-api -am package -DskipTests -ntp
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: identity-api-jar
+          path: ${{ env.WORKDIR }}/identity-api/target/identity-api-*.jar
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Build + Push Docker image
+  # ---------------------------------------------------------------------------
+  # Chỉ chạy khi:
+  #   - Push tag bắt đầu v* (vd v0.1.0, v1.0.0-rc1)
+  #   - Job test pass trước đó
+  # Push lên GitHub Container Registry (ghcr.io) — miễn phí cho public repo.
+  build-image:
+    name: Build + Push Docker image
+    runs-on: ubuntu-latest
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      packages: write   # cần để push lên ghcr.io
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        # Buildx cần cho multi-arch + cache mount trong Dockerfile (--mount=type=cache).
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags + labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/identity-service
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+
+      - name: Build + Push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.WORKDIR }}
+          file: ${{ env.WORKDIR }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # gha cache = GitHub Actions cache, miễn phí cho mọi repo. Lưu layer
+          # ~/.m2/repository giữa các lần build, build sau cực nhanh.
