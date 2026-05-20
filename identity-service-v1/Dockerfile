@@ -38,7 +38,16 @@
 # Dùng 21-jdk-jammy (Ubuntu 22.04 base) thay vì alpine vì:
 #   - musl libc của alpine đôi khi có vấn đề với Oracle JDBC driver.
 #   - jammy có glibc, tương thích tốt hơn với native libraries.
-FROM eclipse-temurin:21-jdk-jammy AS builder
+#
+# LƯU Ý: dùng FQIN (Fully Qualified Image Name) "docker.io/library/..." thay vì
+# "eclipse-temurin:..." trần. Lý do:
+#   - Podman (đặc biệt rootless Fedora/Arch) bật short-name resolution mode.
+#     Image tên ngắn → Podman không tự đoán registry, đòi user chọn tương tác.
+#     Build trong CI / non-TTY sẽ fail với lỗi
+#     "short-name resolution enforced but cannot prompt without a TTY".
+#   - Docker tự gắn docker.io ngầm — FQIN không gây bất tiện gì cho docker.
+#   - Vậy nên dùng FQIN là an toàn cho mọi engine.
+FROM docker.io/library/eclipse-temurin:21-jdk-jammy AS builder
 
 WORKDIR /build
 
@@ -96,7 +105,7 @@ RUN set -eux; \
 # Stage 2: runtime
 # -----------------------------------------------------------------------------
 # JRE only (không cần javac, jar tool, ...). 21-jre-jammy: ~200MB.
-FROM eclipse-temurin:21-jre-jammy AS runtime
+FROM docker.io/library/eclipse-temurin:21-jre-jammy AS runtime
 
 # Metadata (OCI labels — chuẩn cho image registry)
 LABEL org.opencontainers.image.title="identity-service" \
