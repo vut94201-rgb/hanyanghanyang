@@ -162,19 +162,40 @@ springdoc:
 # (Cấu hình defensive — nếu sau này có thêm spring-boot-starter-actuator,
 #  file này đã chốt sẵn để không lộ thông tin nhạy cảm.)
 management:
+  server:
+    port: ${MANAGEMENT_SERVER_PORT:9090}
   endpoints:
     web:
+      base-path: /actuator
       exposure:
-        include: health
-        exclude: env,beans,heapdump,threaddump,configprops,mappings
+        include: health, info, prometheus
+        exclude: env,beans,heapdump,threaddump,configprops,mappings,loggers
   endpoint:
     health:
-      # KHÔNG show-details=always — chỉ show khi caller có quyền (mặc định never).
       show-details: never
       show-components: never
+    prometheus:
+      access: read_only
   info:
     env:
       enabled: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        identity.auth.login.duration.seconds: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 1m
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE_RATE:0.1}
+    propagation:
+      type: b3
 
 # -----------------------------------------------------------------------------
 # Logging — INFO mặc định, không log SQL parameter (chứa password / token)
