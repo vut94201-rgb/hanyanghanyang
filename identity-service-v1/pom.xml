@@ -54,6 +54,9 @@
         <!--   Bucket4j 8.10.x: API ổn định, artifactId truyền thống (chưa tách _jdk17-*).
               Dùng cho rate-limit dạng token bucket, có Redis backend cho distributed limit. -->
         <bucket4j.version>8.10.1</bucket4j.version>
+        <!--   Logstash Logback encoder - encode log thành JSON cho ELK/Splunk/Loki ingest.
+              Spring Boot không ship sẵn, phải pin version độc lập.   -->
+        <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
     </properties>
     <dependencyManagement>
         <!--
@@ -143,6 +146,12 @@
                 <groupId>com.bucket4j</groupId>
                 <artifactId>bucket4j-redis</artifactId>
                 <version>${bucket4j.version}</version>
+            </dependency>
+            <!--   Logstash encoder - JSON log format. KHÔNG có trong Spring Boot BOM.   -->
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
