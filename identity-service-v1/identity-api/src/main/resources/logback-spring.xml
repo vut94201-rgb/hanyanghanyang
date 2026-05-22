@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  logback-spring.xml — cấu hình log có profile awareness
+  ============================================================================
+
+  Vì sao dùng file XML thay vì application.yml:
+    Spring Boot logging.* yml chỉ override được cơ bản (level, pattern). Để
+    encode JSON với Logstash encoder + bind traceId vào MDC + có 2 profile
+    config khác nhau (dev plain text vs prod JSON) → cần XML.
+
+  Spring Boot tự pick file tên "logback-spring.xml" trong classpath.
+
+  Profile awareness:
+    <springProfile name="prod"> ... </springProfile>
+    Spring Boot eval profile lúc app start - chỉ block tương ứng được apply.
+
+  MDC keys "traceId" và "spanId" được Micrometer Tracing tự bind khi request
+  vào chain. Pattern có %X{traceId:-} sẽ in chuỗi rỗng nếu chưa có (vd: log
+  lúc app start chưa có request).
+  ============================================================================
+-->
+<configuration>
+
+    <!-- Includes các config mặc định của Spring Boot (console color, level, ...).
+         BẮT BUỘC ở đầu - các appender custom phía dưới reference vào CONSOLE_LOG_PATTERN. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- ====================================================================== -->
+    <!-- DEV profile + default: log plain text với màu, traceId hiển thị         -->
+    <!-- ====================================================================== -->
+    <springProfile name="dev | default">
+
+        <!-- Pattern với traceId/spanId. Format ngắn vì console screen hẹp.
+             %X{traceId:-} = MDC key, default chuỗi rỗng nếu chưa set. -->
+        <property name="CONSOLE_LOG_PATTERN_WITH_TRACE"
+                  value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([%X{traceId:-},%X{spanId:-}]){yellow} %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15thread]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"/>
+
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN_WITH_TRACE}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+
+        <logger name="com.personal.identity" level="DEBUG"/>
+    </springProfile>
+
+    <!-- ====================================================================== -->
+    <!-- PROD profile: log JSON cho Loki/ELK/Splunk ingest                       -->
+    <!-- ====================================================================== -->
+    <springProfile name="prod">
+
+        <!-- LogstashEncoder produce 1 dòng JSON per log event. Format:
+             {
+               "@timestamp": "2026-05-20T15:00:00.000+07:00",
+               "@version": "1",
+               "message": "Login success for user admin",
+               "logger_name": "com.personal.identity.api.controller.AuthController",
+               "thread_name": "http-nio-8080-exec-1",
+               "level": "INFO",
+               "level_value": 20000,
+               "traceId": "abc123...",
+               "spanId": "def456...",
+               "service": "identity-service"
+             }
+
+             Custom fields như "service" giúp ELK/Splunk filter dễ khi nhiều service
+             cùng đẩy log vào 1 index. -->
+        <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <!-- Include MDC để traceId/spanId tự xuất hiện thành field JSON. -->
+                <includeMdc>true</includeMdc>
+                <!-- Custom field constant - identify service trong log aggregator. -->
+                <customFields>{"service":"identity-service"}</customFields>
+                <!-- Timestamp ISO-8601 với timezone, sortable. -->
+                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSXXX</timestampPattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </root>
+
+        <!-- Production log chỉ INFO+ cho code app, WARN cho framework noise.
+             Override qua env var nếu cần (LOGGING_LEVEL_COM_PERSONAL_IDENTITY). -->
+        <logger name="com.personal.identity" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="org.springframework.security" level="WARN"/>
+    </springProfile>
+
+    <!-- ====================================================================== -->
+    <!-- TEST profile: tắt JSON, plain text gọn để test output đọc được          -->
+    <!-- ====================================================================== -->
+    <springProfile name="test">
+        <appender name="CONSOLE_TEST" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{spanId:-}] %logger{20} - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <root level="WARN">
+            <appender-ref ref="CONSOLE_TEST"/>
+        </root>
+        <logger name="com.personal.identity" level="INFO"/>
+    </springProfile>
+
+</configuration>
