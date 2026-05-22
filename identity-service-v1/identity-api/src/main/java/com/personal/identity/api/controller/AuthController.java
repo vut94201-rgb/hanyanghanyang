@@ -74,6 +74,7 @@ public class AuthController {
     private final RevokeSessionUseCase revokeSessionUseCase;
     private final LogoutAllUseCase logoutAllUseCase;
     private final RequestContextExtractor contextExtractor;
+    private final com.personal.identity.api.observability.IdentityMetrics.LoginMetrics loginMetrics;
     // Inject port trực tiếp cho read-only query — không tạo use case wrapper rỗng.
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
@@ -105,12 +106,24 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest) {
         RequestContext context = contextExtractor.extract(httpRequest);
-        AuthResult result = loginUseCase.execute(new LoginUseCase.LoginCommand(
-                request.username(),
-                request.password(),
-                context
-        ));
-        return ResponseEntity.ok(AuthResponse.from(result));
+        // Timer.record() đo cả wall-clock time của login flow gồm DB lookup + BCrypt verify.
+        // BCrypt cost factor 10 mất ~50-100ms - đáng đo để alert nếu latency tăng bất thường.
+        // Outcome counter increment trong try/catch (success path) hoặc GlobalExceptionHandler
+        // (failure path qua exception). Đơn giản hoá: chỉ count success ở đây, failure để
+        // GlobalExceptionHandler tự pump (xem patch 2).
+        io.micrometer.core.instrument.Timer.Sample sample =
+                io.micrometer.core.instrument.Timer.start();
+        try {
+            AuthResult result = loginUseCase.execute(new LoginUseCase.LoginCommand(
+                    request.username(),
+                    request.password(),
+                    context
+            ));
+            loginMetrics.loginSuccess().increment();
+            return ResponseEntity.ok(AuthResponse.from(result));
+        } finally {
+            sample.stop(loginMetrics.loginTimer());
+        }
     }
 
     /**

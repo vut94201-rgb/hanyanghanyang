@@ -18,6 +18,7 @@ import com.personal.identity.core.user.InvalidCredentialsException;
 import com.personal.identity.core.user.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -64,6 +65,14 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private final com.personal.identity.api.observability.IdentityMetrics.LoginMetrics loginMetrics;
+
+    @Autowired
+    public GlobalExceptionHandler(
+            com.personal.identity.api.observability.IdentityMetrics.LoginMetrics loginMetrics) {
+        this.loginMetrics = loginMetrics;
+    }
+
     // ============================================================
     // 401 - Authentication errors
     // ============================================================
@@ -72,6 +81,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidCredentials(
             InvalidCredentialsException ex, HttpServletRequest request) {
         log.debug("Invalid credentials: {}", ex.getMessage());
+        if ("/api/v1/auth/login".equals(request.getRequestURI())) {
+            loginMetrics.loginFailure().increment();
+        }
         return build(HttpStatus.UNAUTHORIZED, ex, request);
     }
 
