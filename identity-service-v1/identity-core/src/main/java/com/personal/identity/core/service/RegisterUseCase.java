@@ -90,19 +90,14 @@ public class RegisterUseCase {
         Role defaultRole = roleRepository.findByRoleCode(DEFAULT_ROLE_CODE)
                 .orElseThrow(() -> RoleNotFoundException.byCode(DEFAULT_ROLE_CODE));
 
-        // 5. Build user mới
-        Set<Role> roles = new HashSet<>();
-        roles.add(defaultRole);
-
-        User user = User.builder()
-                .username(command.username())
-                .emailAddress(command.emailAddress())
-                .passwordHash(passwordHash)
-                .fullName(command.fullName())
-                .accountStatus(UserStatus.ACTIVE)
-                .roles(roles)
-                .deleted(false)
-                .build();
+        // 5. Build user mới qua factory - status ACTIVE đã set mặc định trong createNew
+        User user = User.createNew(
+                command.username(),
+                command.emailAddress(),
+                passwordHash,
+                command.fullName()
+        );
+        user.addRole(defaultRole);
 
         return userRepository.save(user);
     }

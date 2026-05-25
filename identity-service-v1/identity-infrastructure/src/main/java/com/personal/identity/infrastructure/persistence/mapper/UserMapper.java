@@ -1,12 +1,15 @@
 package com.personal.identity.infrastructure.persistence.mapper;
 
+
+import com.personal.identity.core.role.Permission;
+import com.personal.identity.core.role.Role;
 import com.personal.identity.core.user.User;
+import com.personal.identity.infrastructure.persistence.entity.PermissionEntity;
+import com.personal.identity.infrastructure.persistence.entity.RoleEntity;
 import com.personal.identity.infrastructure.persistence.entity.UserEntity;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
+
+import java.util.Set;
 
 /**
  * MapStruct mapper cho {@link User} ↔ {@link UserEntity}.
@@ -21,26 +24,54 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
  * {@code @EntityGraph(attributePaths = {"roles", "roles.permissions", "directPermissions"})}.
  * Nếu không, LazyInitializationException.
  *
- * <p><b>passwordHash mapping:</b> được map giữa 2 chiều. KHÔNG bao giờ xuất hiện
- * trong DTO response - trách nhiệm tầng controller.
+ * <h2>Vì sao {@link #toDomain} viết tay (default method)</h2>
  *
- * <p><b>Audit + soft-delete fields:</b>
- * Map từ entity → domain để service biết khi nào tạo / sửa / xóa. Nhưng KHÔNG
- * map ngược domain → entity (vì JPA tự quản lý) - các field này không xuất hiện
- * trong toEntity/updateEntity.
+ * <p>{@code User} domain bỏ {@code @Builder} + public all-args constructor để
+ * đóng gói state. Chỉ dựng được qua {@code User.rehydrate(...)}. MapStruct không
+ * tự generate được pattern này, nên {@code toDomain} dùng {@code default} method
+ * gọi trực tiếp {@code User.rehydrate}.
+ *
+ * <p>Hai method {@link #mapRoles} và {@link #mapDirectPermissions} để MapStruct
+ * tự generate impl, sử dụng {@link RoleMapper} + {@link PermissionMapper} qua
+ * {@code uses = {...}}.
+ *
+ * <p><b>passwordHash:</b> được map 2 chiều. KHÔNG bao giờ xuất hiện trong DTO
+ * response - trách nhiệm tầng controller.
  */
 @Mapper(uses = {RoleMapper.class, PermissionMapper.class})
 public interface UserMapper {
 
     /**
-     * Entity → Domain. Map đầy đủ kể cả audit / soft-delete fields để service
-     * có context khi cần.
-     *
-     * <p>Lưu ý {@code deleted} và {@code deletedAt} kế thừa từ
-     * {@code SoftDeletableAuditableEntity} - MapStruct tự tìm getter ở
-     * superclass nên không cần khai báo nguồn.
+     * Entity → Domain. Dùng {@link User#rehydrate} - bypass business validation
+     * vì state đã được DB đảm bảo (constraint + flyway migration).
      */
-    User toDomain(UserEntity entity);
+    default User toDomain(UserEntity entity) {
+        if (entity == null) return null;
+
+        return User.rehydrate(
+                entity.getId(),
+                entity.getUsername(),
+                entity.getEmailAddress(),
+                entity.getPasswordHash(),
+                entity.getFullName(),
+                entity.getAccountStatus(),
+                mapRoles(entity.getRoles()),
+                mapDirectPermissions(entity.getDirectPermissions()),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt(),
+                entity.isDeleted(),
+                entity.getDeletedAt()
+        );
+    }
+
+    /**
+     * MapStruct tự generate, dùng {@link RoleMapper#toDomain(RoleEntity)} cho từng phần tử.
+     * Trả về Set rỗng nếu input null (do MapStruct convention).
+     */
+    Set<Role> mapRoles(Set<RoleEntity> entities);
+
+    /** Tương tự {@link #mapRoles}, dùng {@link PermissionMapper}. */
+    Set<Permission> mapDirectPermissions(Set<PermissionEntity> entities);
 
     /**
      * Domain → Entity, dùng cho CREATE.

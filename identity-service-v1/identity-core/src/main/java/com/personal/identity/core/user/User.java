@@ -29,26 +29,33 @@ import java.util.stream.Collectors;
  * <p><b>Effective permissions = union(2 nguồn)</b> - chỉ additive, không deny.
  * Xem {@link #getEffectivePermissions()}.
  *
- * <p>Đây là pattern hybrid RBAC + ABAC mà Azure AD, AWS IAM dùng.
+ * <p>Đây là pattern hybrid RBAC + direct-grant mà Azure AD, AWS IAM dùng.
  *
- * <h2>Đặc điểm class</h2>
+ * <h2>Đóng gói state (encapsulation)</h2>
+ *
+ * <p>Class này KHÔNG có {@code @Builder}, KHÔNG có public all-args constructor,
+ * KHÔNG có public setter. Chỉ có 2 đường dựng instance:
  * <ul>
- *   <li>Class có behavior thay vì record - vì có lifecycle: tạo → đổi password →
- *       gán role / direct permission → disable → soft delete.</li>
- *   <li>Setter của id, createdAt, updatedAt, deleted{,At} là package-private -
- *       chỉ mapper trong cùng package set được; code khác không thể.</li>
- *   <li>{@code passwordHash} có getter public nhưng KHÔNG bao giờ lộ qua DTO -
- *       trách nhiệm của tầng controller/mapper.</li>
+ *   <li>{@link #createNew(String, String, String, String)} - đăng ký user MỚI
+ *       từ tầng nghiệp vụ (RegisterUseCase). Set state mặc định: chưa có id,
+ *       status ACTIVE, roles rỗng, deleted false.</li>
+ *   <li>{@link #rehydrate} - <b>CHỈ dành cho infrastructure mapper</b>,
+ *       dùng khi load lại từ DB. Bypass mọi validation nghiệp vụ.
+ *       <b>Không được gọi từ tầng service/controller.</b></li>
  * </ul>
+ *
+ * <p>Mọi thay đổi state sau đó đều phải qua method nghiệp vụ:
+ * {@link #changePassword}, {@link #addRole}, {@link #grantPermission},
+ * {@link #disable}, {@link #activate}, {@link #lock}, ...
+ *
+ * <h2>passwordHash</h2>
+ * Có getter public (mapper cần đọc để persist) nhưng KHÔNG bao giờ được lộ qua
+ * DTO response - trách nhiệm của tầng controller/mapper.
  */
 @Getter
-@Builder
-@NoArgsConstructor
 public class User {
 
-    @Setter(AccessLevel.PACKAGE)
     private Long id;
-
     private String username;
     private String emailAddress;
 
@@ -59,30 +66,24 @@ public class User {
     private UserStatus accountStatus;
 
     /** Roles được gán cho user. KHÔNG null (worst case: rỗng). */
-    @Builder.Default
-    private Set<Role> roles = new HashSet<>();
+    private Set<Role> roles;
 
     /**
      * Permission gán trực tiếp cho user, NGOÀI permission từ role.
      * Effective permissions = union(roles' permissions, directPermissions).
      */
-    @Builder.Default
-    private Set<Permission> directPermissions = new HashSet<>();
+    private Set<Permission> directPermissions;
 
-    @Setter(AccessLevel.PACKAGE)
     private Instant createdAt;
-
-    @Setter(AccessLevel.PACKAGE)
     private Instant updatedAt;
-
-    @Setter(AccessLevel.PACKAGE)
     private boolean deleted;
-
-    @Setter(AccessLevel.PACKAGE)
     private Instant deletedAt;
 
-    // ---- All-args constructor cho @Builder (Lombok yêu cầu khi có Setter custom) ----
-    public User(
+    // ============================================================
+    // CONSTRUCTOR - private, chỉ gọi qua factory
+    // ============================================================
+
+    private User(
             Long id,
             String username,
             String emailAddress,
@@ -102,12 +103,105 @@ public class User {
         this.passwordHash = passwordHash;
         this.fullName = fullName;
         this.accountStatus = accountStatus;
-        this.roles = roles != null ? roles : new HashSet<>();
-        this.directPermissions = directPermissions != null ? directPermissions : new HashSet<>();
+        this.roles = roles != null ? new HashSet<>(roles) : new HashSet<>();
+        this.directPermissions = directPermissions != null
+                ? new HashSet<>(directPermissions)
+                : new HashSet<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deleted = deleted;
         this.deletedAt = deletedAt;
+    }
+
+    // ============================================================
+    // FACTORY METHODS
+    // ============================================================
+
+    /**
+     * Tạo user MỚI cho luồng đăng ký. Status mặc định ACTIVE, chưa có id
+     * (DB sẽ gen), chưa có role - caller PHẢI gọi {@link #addRole(Role)}
+     * sau khi tạo nếu cần gán role mặc định.
+     *
+     * <p>Tầng audit / soft-delete để mặc định: createdAt/updatedAt null
+     * (JPA @CreationTimestamp/@UpdateTimestamp sẽ điền khi persist),
+     * deleted=false.
+     *
+     * @throws IllegalArgumentException nếu bất kỳ tham số nào blank
+     */
+    public static User createNew(
+            String username,
+            String emailAddress,
+            String passwordHash,
+            String fullName
+    ) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("username must not be blank");
+        }
+        if (emailAddress == null || emailAddress.isBlank()) {
+            throw new IllegalArgumentException("emailAddress must not be blank");
+        }
+        if (passwordHash == null || passwordHash.isBlank()) {
+            throw new IllegalArgumentException("passwordHash must not be blank");
+        }
+        return new User(
+                null,
+                username,
+                emailAddress,
+                passwordHash,
+                fullName,
+                UserStatus.ACTIVE,
+                new HashSet<>(),
+                new HashSet<>(),
+                null,
+                null,
+                false,
+                null
+        );
+    }
+
+    /**
+     * <b>CHỈ DÙNG TRONG INFRASTRUCTURE MAPPER.</b> Dùng khi load lại User
+     * từ DB (UserMapper.toDomain). Bypass mọi business validation.
+     *
+     * <p>Việc gọi method này từ tầng service / controller / use case là
+     * code smell - sẽ bị reject ở code review. Tầng nghiệp vụ phải dùng
+     * {@link #createNew} hoặc load qua repository.
+     *
+     * <p>Nếu cần enforce cứng, có thể bổ sung ArchUnit test:
+     * <pre>
+     * methods().that().areDeclaredIn(User.class).and().haveName("rehydrate")
+     *     .should().onlyBeCalled().byClassesThat()
+     *     .resideInAPackage("..infrastructure.persistence.mapper..");
+     * </pre>
+     */
+    public static User rehydrate(
+            Long id,
+            String username,
+            String emailAddress,
+            String passwordHash,
+            String fullName,
+            UserStatus accountStatus,
+            Set<Role> roles,
+            Set<Permission> directPermissions,
+            Instant createdAt,
+            Instant updatedAt,
+            boolean deleted,
+            Instant deletedAt
+    ) {
+        return new User(
+                id,
+                username,
+                emailAddress,
+                passwordHash,
+                fullName,
+                accountStatus,
+                roles,
+                directPermissions,
+                createdAt,
+                updatedAt,
+                deleted,
+                deletedAt
+        );
     }
 
     // ============================================================
@@ -129,6 +223,10 @@ public class User {
 
     public void removeRole(Role role) {
         this.roles.remove(role);
+    }
+
+    public void replaceRoles(Set<Role> newRoles) {
+        this.roles = new HashSet<>(newRoles);
     }
 
     /**
@@ -154,10 +252,6 @@ public class User {
     public void disable() { this.accountStatus = UserStatus.DISABLED; }
     public void activate() { this.accountStatus = UserStatus.ACTIVE; }
     public void lock() { this.accountStatus = UserStatus.LOCKED; }
-
-    public void replaceRoles(Set<Role> newRoles) {
-        this.roles = new HashSet<>(newRoles);
-    }
 
     public boolean canLogin() {
         return accountStatus == UserStatus.ACTIVE && !deleted;
