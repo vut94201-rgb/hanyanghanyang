@@ -1,0 +1,41 @@
+# =============================================================================
+# application-dev.yml - cấu hình DEV PROFILE
+# =============================================================================
+# Kích hoạt: chạy app với -Dspring.profiles.active=dev
+# Trong IntelliJ Run Configuration: thêm vào "VM options" hoặc "Active profiles".
+#
+# Sự khác biệt với application.yml mặc định:
+#   - JWT secret hard-code sẵn (KHÔNG cần set env var)
+#   - SQL log chi tiết hơn
+#   - GeoIP cho phép thiếu file (không bắt buộc tải GeoLite2 ngay từ ngày đầu)
+#
+# ⚠️ TUYỆT ĐỐI KHÔNG dùng file này cho production. Secret dưới đây đã commit
+# vào public repo, coi như public. Production phải set JWT_SECRET qua env.
+# =============================================================================
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        # Bật để xem từng câu SQL Hibernate sinh ra - cực kỳ hữu ích khi học JPA.
+        # Tắt khi log màn hình quá ồn.
+        show_sql: false
+
+app:
+  jwt:
+    # Base64 384-bit dev secret. Sinh bằng: openssl rand -base64 48
+    # Dài hơn 256-bit yêu cầu của HS256 để có biên độ an toàn.
+    secret: wDzArL/Cxy/WhtBCG/+fZtp6EQ2so9SxlW0CaAOlJveLY22fpf3mjqnx1BafgNW7
+    access-token-ttl-minutes: 15
+    refresh-token-ttl-days: 30
+
+  geoip:
+    # Dev cho phép chạy không có file .mmdb (resolver sẽ trả về GeoLocation.empty()).
+    fail-on-missing-database: false
+
+logging:
+  level:
+    com.personal.identity: DEBUG
+    # Bật khi cần xem chi tiết query + parameter binding (tốn nhiều dòng log)
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
