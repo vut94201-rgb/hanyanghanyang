@@ -74,11 +74,12 @@ spring:
 # ---- Server ----
 server:
   port: ${SERVER_PORT:8080}
-  error:
-    # KHÔNG lộ stacktrace ra response - GlobalExceptionHandler tự format error
-    include-message: never
-    include-stacktrace: never
-    include-binding-errors: never
+  web:
+      error:
+        # KHÔNG lộ stacktrace ra response - GlobalExceptionHandler tự format error
+        include-message: never
+        include-stacktrace: never
+        include-binding-errors: never
 
 # ---- Cấu hình ứng dụng (custom) ----
 # Đặt dưới namespace "app.*" để gom toàn bộ config riêng của Identity Service.
