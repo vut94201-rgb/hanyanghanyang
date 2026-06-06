@@ -8,11 +8,11 @@ package com.personal.identity.core.session;
  * (192.168.x, 10.x), localhost, hoặc database không cover IP đó, resolver
  * sẽ trả {@link #empty()}.
  *
- * @param countryName   "Vietnam", "United States"...
- * @param countryCode   ISO 3166-1 alpha-2: "VN", "US"
- * @param cityName      "Hanoi", "San Francisco"
- * @param latitude      Vĩ độ, có thể null
- * @param longitude     Kinh độ
+ * @param countryName "Vietnam", "United States"...
+ * @param countryCode ISO 3166-1 alpha-2: "VN", "US"
+ * @param cityName    "Hanoi", "San Francisco"
+ * @param latitude    Vĩ độ, có thể null
+ * @param longitude   Kinh độ
  */
 public record GeoLocation(
         String countryName,

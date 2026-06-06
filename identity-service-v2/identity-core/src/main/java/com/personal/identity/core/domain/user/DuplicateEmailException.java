@@ -1,7 +1,7 @@
-package com.personal.identity.core.user;
+package com.personal.identity.core.domain.user;
 
-import com.personal.identity.core.shared.exception.DomainException;
-import com.personal.identity.core.shared.exception.ErrorCode;
+import com.personal.identity.core.domain.shared.exception.DomainException;
+import com.personal.identity.core.domain.shared.exception.ErrorCode;
 
 import java.io.Serial;
 

@@ -14,66 +14,91 @@ import java.util.Set;
  * Aggregate Role. Có behavior (gán / bỏ permission) nên dùng class thay vì record.
  *
  * <p>Quan hệ:
+ *
  * <ul>
- *   <li>Many-to-many với {@code User} (qua bảng nối {@code user_roles}).</li>
- *   <li>Many-to-many với {@link Permission} (qua bảng nối {@code role_permissions}).</li>
+ *   <li>Many-to-many với {@code User} (qua bảng nối {@code user_roles}).
+ *   <li>Many-to-many với {@link Permission} (qua bảng nối {@code role_permissions}).
  * </ul>
  */
 @Getter
-@Builder
-@NoArgsConstructor
 public class Role {
+  private Long id;
+  private String roleCode;
+  private String roleName;
+  private String description;
+  private Set<Permission> permissions;
+  private Instant createdAt;
+  private Instant updatedAt;
 
-    @Setter(AccessLevel.PACKAGE)
-    private Long id;
+  private Role(
+      Long id,
+      String roleCode,
+      String roleName,
+      String description,
+      Set<Permission> permissions,
+      Instant createdAt,
+      Instant updatedAt) {
+    this.id = id;
+    this.roleCode = roleCode;
+    this.roleName = roleName;
+    this.description = description;
+    this.permissions = permissions != null ? new HashSet<>(permissions) : new HashSet<>();
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
 
-    /** Mã định danh: ADMIN, USER, MODERATOR. UNIQUE trong DB. */
-    private String roleCode;
-
-    /** Tên hiển thị: "Administrator", "Normal User"... */
-    private String roleName;
-
-    private String description;
-
-    @Builder.Default
-    private Set<Permission> permissions = new HashSet<>();
-
-    @Setter(AccessLevel.PACKAGE)
-    private Instant createdAt;
-
-    @Setter(AccessLevel.PACKAGE)
-    private Instant updatedAt;
-
-    public Role(
-            Long id,
-            String roleCode,
-            String roleName,
-            String description,
-            Set<Permission> permissions,
-            Instant createdAt,
-            Instant updatedAt
-    ) {
-        this.id = id;
-        this.roleCode = roleCode;
-        this.roleName = roleName;
-        this.description = description;
-        this.permissions = permissions != null ? permissions : new HashSet<>();
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+  public static Role createNew(String roleCode, String roleName, String description) {
+    if (roleCode == null || roleCode.isBlank()) {
+      throw new IllegalArgumentException("roleCode must not be blank");
     }
-
-    public void addPermission(Permission permission) {
-        if (permission == null) throw new IllegalArgumentException("Permission must not be null");
-        this.permissions.add(permission);
+    if (roleName == null || roleName.isBlank()) {
+      throw new IllegalArgumentException("roleName must not be blank");
     }
+    return new Role(null, roleCode, roleName, description, new HashSet<>(), null, null);
+  }
 
-    public void removePermission(Permission permission) {
-        this.permissions.remove(permission);
-    }
+  public static Role rehydrate(
+      Long id,
+      String roleCode,
+      String roleName,
+      String description,
+      Set<Permission> permissions,
+      Instant createdAt,
+      Instant updatedAt) {
+    return new Role(id, roleCode, roleName, description, permissions, createdAt, updatedAt);
+  }
 
-    /** Tiện kiểm tra trong service: role này có permission code X không? */
-    public boolean hasPermission(String permissionCode) {
-        return permissions.stream()
-                .anyMatch(p -> p.permissionCode().equals(permissionCode));
+  public Set<Permission> getPermissions() {
+    return Set.copyOf(permissions);
+  }
+
+  public void addPermission(Permission permission) {
+    if (permission == null) {
+      throw new IllegalArgumentException("Permission must not be null");
     }
+    this.permissions.add(permission);
+  }
+
+  public void removePermission(Permission permission) {
+    this.permissions.remove(permission);
+  }
+
+  public boolean hasPermission(String permissionCode) {
+    if (permissionCode == null || permissionCode.isBlank()) {
+      return false;
+    }
+    return permissions.stream()
+        .anyMatch(permission -> permission.permissionCode().equals(permissionCode));
+  }
+
+  public void rename(String newRoleName) {
+    if (newRoleName == null || newRoleName.isBlank()) {
+      throw new IllegalArgumentException("roleName must not be blank");
+    }
+    this.roleName = newRoleName;
+  }
+
+  public void changeDescription(String newDescription) {
+    this.description = newDescription;
+  }
 }

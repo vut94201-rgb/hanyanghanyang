@@ -52,7 +52,7 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
-        <!-- Nếu DTO/controller dùng Lombok -->
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -78,6 +78,32 @@
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Actuator: /actuator/health, /info, /metrics, /prometheus, ... -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Micrometer Prometheus registry: expose metrics ở format Prometheus.
+             Spring Boot 3.5 ship micrometer-core trong actuator, nhưng KHÔNG ship
+             registry cụ thể nào - phải khai báo registry cho Prometheus riêng. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- Micrometer Tracing với Brave backend - generate traceId/spanId,
+             propagate qua HTTP header (B3 format), tự bind vào MDC để log show được.
+             Brave là tracer underlying của Zipkin/Tempo. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.personal</groupId>
+            <artifactId>identity-core</artifactId>
+        </dependency>
+
 
 
     </dependencies>

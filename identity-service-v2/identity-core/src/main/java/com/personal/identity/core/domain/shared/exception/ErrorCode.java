@@ -1,4 +1,4 @@
-package com.personal.identity.core.shared.exception;
+package com.personal.identity.core.domain.shared.exception;
 
 import lombok.Getter;
 

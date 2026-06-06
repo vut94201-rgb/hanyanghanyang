@@ -1,6 +1,8 @@
 package com.personal.identity.infrastructure.persistence.mapper;
 
+import com.personal.identity.core.role.Permission;
 import com.personal.identity.core.role.Role;
+import com.personal.identity.infrastructure.persistence.entity.PermissionEntity;
 import com.personal.identity.infrastructure.persistence.entity.RoleEntity;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -26,7 +28,23 @@ import java.util.stream.Collectors;
 @Mapper(uses = PermissionMapper.class)
 public interface RoleMapper {
 
-    Role toDomain(RoleEntity entity);
+    default Role toDomain(RoleEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        return Role.rehydrate(
+                entity.getId(),
+                entity.getRoleCode(),
+                entity.getRoleName(),
+                entity.getDescription(),
+                mapPermissions(entity.getPermissions()),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
+    }
+
+    Set<Permission> mapPermissions(Set<PermissionEntity> entities);
 
     @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", source = "id")
@@ -42,14 +60,4 @@ public interface RoleMapper {
     @Mapping(target = "description", source = "description")
     @Mapping(target = "permissions", source = "permissions")
     void updateEntity(Role domain, @MappingTarget RoleEntity entity);
-
-    default Set<Role> toDomainSet(Set<RoleEntity> entities) {
-        if (entities == null) return java.util.Collections.emptySet();
-        return entities.stream().map(this::toDomain).collect(Collectors.toSet());
-    }
-
-    default List<Role> toDomainList(List<RoleEntity> entities) {
-        if (entities == null) return java.util.Collections.emptyList();
-        return entities.stream().map(this::toDomain).collect(Collectors.toList());
-    }
 }

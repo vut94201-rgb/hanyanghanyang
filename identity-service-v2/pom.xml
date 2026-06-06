@@ -134,6 +134,8 @@
             <version>${yauaa.version}</version>
         </dependency>
 
+
+
         <!-- MapStruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
