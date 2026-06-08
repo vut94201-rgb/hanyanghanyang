@@ -24,40 +24,40 @@ import java.util.stream.Collectors;
  * <p><b>Lưu ý LAZY:</b> {@code roleEntity.getPermissions()} là LAZY collection.
  * Mapper PHẢI được gọi trong transaction (hoặc sau khi đã fetch qua @EntityGraph).
  * Nếu không, sẽ throw LazyInitializationException khi access permissions.
- */
-@Mapper(uses = PermissionMapper.class)
-public interface RoleMapper {
+     */
+    @Mapper(uses = PermissionMapper.class)
+    public interface RoleMapper {
 
-    default Role toDomain(RoleEntity entity) {
-        if (entity == null) {
-            return null;
+        default Role toDomain(RoleEntity entity) {
+            if (entity == null) {
+                return null;
+            }
+
+            return Role.rehydrate(
+                    entity.getId(),
+                    entity.getRoleCode(),
+                    entity.getRoleName(),
+                    entity.getDescription(),
+                    mapPermissions(entity.getPermissions()),
+                    entity.getCreatedAt(),
+                    entity.getUpdatedAt()
+            );
         }
 
-        return Role.rehydrate(
-                entity.getId(),
-                entity.getRoleCode(),
-                entity.getRoleName(),
-                entity.getDescription(),
-                mapPermissions(entity.getPermissions()),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt()
-        );
+        Set<Permission> mapPermissions(Set<PermissionEntity> entities);
+
+        @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+        @Mapping(target = "id", source = "id")
+        @Mapping(target = "roleCode", source = "roleCode")
+        @Mapping(target = "roleName", source = "roleName")
+        @Mapping(target = "description", source = "description")
+        @Mapping(target = "permissions", source = "permissions")
+        RoleEntity toEntity(Role domain);
+
+        @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+        @Mapping(target = "roleCode", source = "roleCode")
+        @Mapping(target = "roleName", source = "roleName")
+        @Mapping(target = "description", source = "description")
+        @Mapping(target = "permissions", source = "permissions")
+        void updateEntity(Role domain, @MappingTarget RoleEntity entity);
     }
-
-    Set<Permission> mapPermissions(Set<PermissionEntity> entities);
-
-    @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "roleCode", source = "roleCode")
-    @Mapping(target = "roleName", source = "roleName")
-    @Mapping(target = "description", source = "description")
-    @Mapping(target = "permissions", source = "permissions")
-    RoleEntity toEntity(Role domain);
-
-    @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "roleCode", source = "roleCode")
-    @Mapping(target = "roleName", source = "roleName")
-    @Mapping(target = "description", source = "description")
-    @Mapping(target = "permissions", source = "permissions")
-    void updateEntity(Role domain, @MappingTarget RoleEntity entity);
-}
