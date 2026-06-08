@@ -11,7 +11,19 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.Instant;
-
+/**
+ * Extends {@link BaseEntity} to add 2 timestamp columns automatically managed via Spring Data
+ * JPA Auditing:
+ * <ul>
+ * <li>{@code created_at} - set once upon INSERT.</li>
+ * <li>{@code updated_at} - updated upon every UPDATE.</li>
+ * </ul>
+ *
+ * <p>Subclasses must inherit with a specific type parameter, e.g.:
+ * {@code RoleEntity extends AuditableEntity<Long>}.
+ *
+ * <p>Requirement: the application must have {@code @EnableJpaAuditing} (already present in {@code JpaAuditingConfig}).
+ */
 @Getter
 @Setter
 @MappedSuperclass

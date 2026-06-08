@@ -19,32 +19,19 @@ import java.time.Instant;
  * </ul>
  */
 @Getter
-@Builder
-@NoArgsConstructor
 public class RefreshToken {
+
     private String id;
-
     private String sessionId;
-
-    /** SHA-256 hex of the raw token, NEVER stored as plain text. */
     private String tokenHash;
-
     private RefreshTokenStatus tokenStatus;
-
     private Instant createdAt;
-
     private Instant expiresAt;
-
-    /** Timestamp of when this token was used to rotate. Null if not yet USED. */
     private Instant usedAt;
-
-    /** The IP address from which this token was rotated. Useful for auditing when detecting reuse. */
     private String usedFromIp;
-
-    /** The subsequent token in the chain, null if this is the newest token. */
     private String replacedByTokenId;
 
-    public RefreshToken(
+    private RefreshToken(
             String id,
             String sessionId,
             String tokenHash,
@@ -66,26 +53,83 @@ public class RefreshToken {
         this.replacedByTokenId = replacedByTokenId;
     }
 
-    // =========================================================================
-    // DOMAIN BEHAVIOR
-    // =========================================================================
+    public static RefreshToken createNew(
+            String id,
+            String sessionId,
+            String tokenHash,
+            Instant expiresAt
+    ) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("refresh token id must not be blank");
+        }
+        if (sessionId == null || sessionId.isBlank()) {
+            throw new IllegalArgumentException("sessionId must not be blank");
+        }
+        if (tokenHash == null || tokenHash.isBlank()) {
+            throw new IllegalArgumentException("tokenHash must not be blank");
+        }
+        if (expiresAt == null) {
+            throw new IllegalArgumentException("expiresAt must not be null");
+        }
 
-    /**
-     * Marks the token as having been used for rotation. Sets replacedByTokenId pointing to the new token.
-     */
+        return new RefreshToken(
+                id,
+                sessionId,
+                tokenHash,
+                RefreshTokenStatus.ACTIVE,
+                Instant.now(),
+                expiresAt,
+                null,
+                null,
+                null
+        );
+    }
+
+    public static RefreshToken rehydrate(
+            String id,
+            String sessionId,
+            String tokenHash,
+            RefreshTokenStatus tokenStatus,
+            Instant createdAt,
+            Instant expiresAt,
+            Instant usedAt,
+            String usedFromIp,
+            String replacedByTokenId
+    ) {
+        return new RefreshToken(
+                id,
+                sessionId,
+                tokenHash,
+                tokenStatus,
+                createdAt,
+                expiresAt,
+                usedAt,
+                usedFromIp,
+                replacedByTokenId
+        );
+    }
+
     public void markUsed(String newTokenId, String fromIp) {
         if (tokenStatus != RefreshTokenStatus.ACTIVE) {
             throw new IllegalStateException(
-                    "Cannot mark non-ACTIVE token as USED. Current=" + tokenStatus);
+                    "Cannot mark non-ACTIVE token as USED. Current=" + tokenStatus
+            );
         }
+        if (newTokenId == null || newTokenId.isBlank()) {
+            throw new IllegalArgumentException("newTokenId must not be blank");
+        }
+
         this.tokenStatus = RefreshTokenStatus.USED;
         this.usedAt = Instant.now();
         this.usedFromIp = fromIp;
         this.replacedByTokenId = newTokenId;
     }
 
-    /** Revokes the token (due to session revocation or reuse detection). */
     public void revoke() {
+        if (tokenStatus == RefreshTokenStatus.REVOKED) {
+            return;
+        }
+
         this.tokenStatus = RefreshTokenStatus.REVOKED;
     }
 
@@ -97,5 +141,9 @@ public class RefreshToken {
 
     public boolean isUsed() {
         return tokenStatus == RefreshTokenStatus.USED;
+    }
+
+    public boolean isExpired() {
+        return expiresAt == null || !expiresAt.isAfter(Instant.now());
     }
 }

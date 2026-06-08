@@ -12,9 +12,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = "com.personal.identity")
 @EntityScan(basePackages = "com.personal.identity.infrastructure.persistence.entity")
-@EnableJpaRepositories(basePackages = "com.personal.identity.infrastructure.persistence.adapter")
-@ConfigurationPropertiesScan(basePackageClasses = {DataRedisProperties.class, RateLimitProperties.class})
-@EnableConfigurationProperties
+@EnableJpaRepositories(basePackages = "com.personal.identity.infrastructure.persistence.repository")
+@EnableConfigurationProperties({
+        RateLimitProperties.class,
+        DataRedisProperties.class
+})
+
 public class IdentityBootstrapApplication {
 
     public static void main(String[] args) {

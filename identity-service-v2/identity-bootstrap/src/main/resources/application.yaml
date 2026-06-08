@@ -176,23 +176,3 @@ logging:
     org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: INFO
 
-  rate-limit:
-    enabled: true
-
-    login:
-      short-window-capacity: 5
-      short-window-duration: 1m
-      long-window-capacity: 20
-      long-window-duration: 1h
-
-    register:
-      short-window-capacity: 3
-      short-window-duration: 1m
-      long-window-capacity: 10
-      long-window-duration: 1h
-
-    refresh:
-      short-window-capacity: 10
-      short-window-duration: 1m
-      long-window-capacity: 60
-      long-window-duration: 1h

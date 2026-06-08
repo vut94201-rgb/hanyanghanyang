@@ -26,45 +26,22 @@ import java.time.Instant;
  * </pre>
  */
 @Getter
-@Builder
-@NoArgsConstructor
 public class Session {
 
-    /**
-     * UUID format. Generated at application layer, DO NOT use Database sequence
-     */
     private String id;
     private Long userId;
     private DeviceInfo deviceInfo;
     private GeoLocation location;
     private String ipAddress;
-
-    /**
-     * Raw user-agent, stored for debugging for parsing fails.
-     */
     private String userAgent;
     private SessionStatus sessionStatus;
     private Instant createdAt;
-
-    /**
-     * Update  on every  authenticated  request via JwtAuthenticationFilter
-     */
     private Instant lastActiveAt;
     private Instant expiredAt;
-
-    /**
-     * Null if not yet revoke
-     */
     private Instant revokedAt;
-
-    /**
-     * Null if not yet revoke
-     */
     private RevokedReason revokedReason;
 
-
-    // ----- AllArgs constructor cho @Builder -----
-    public Session(
+    private Session(
             String id,
             Long userId,
             DeviceInfo deviceInfo,
@@ -74,62 +51,127 @@ public class Session {
             SessionStatus sessionStatus,
             Instant createdAt,
             Instant lastActiveAt,
-            Instant expiresAt,
+            Instant expiredAt,
             Instant revokedAt,
             RevokedReason revokedReason
     ) {
         this.id = id;
         this.userId = userId;
-        this.deviceInfo = deviceInfo;
-        this.location = location;
+        this.deviceInfo = deviceInfo != null ? deviceInfo : DeviceInfo.unknown();
+        this.location = location != null ? location : GeoLocation.empty();
         this.ipAddress = ipAddress;
         this.userAgent = userAgent;
         this.sessionStatus = sessionStatus;
         this.createdAt = createdAt;
         this.lastActiveAt = lastActiveAt;
-        this.expiredAt = expiresAt;
+        this.expiredAt = expiredAt;
         this.revokedAt = revokedAt;
         this.revokedReason = revokedReason;
     }
 
-    // ============================================================
-    // DOMAIN BEHAVIOR
-    // ============================================================
+    public static Session createNew(
+            String id,
+            Long userId,
+            DeviceInfo deviceInfo,
+            GeoLocation location,
+            String ipAddress,
+            String userAgent,
+            Instant expiresAt
+    ) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("session id must not be blank");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("userId must not be null");
+        }
+        if (ipAddress == null || ipAddress.isBlank()) {
+            throw new IllegalArgumentException("ipAddress must not be blank");
+        }
+        if (expiresAt == null) {
+            throw new IllegalArgumentException("expiresAt must not be null");
+        }
 
-    /**
-     * Revokes the session with a reason. Idempotent: revoking an already REVOKED session
-     * results in a no-op and does not throw an exception. Saves revokedAt and revokedReason for auditing.
-     */
+        Instant now = Instant.now();
+
+        return new Session(
+                id,
+                userId,
+                deviceInfo,
+                location,
+                ipAddress,
+                userAgent,
+                SessionStatus.ACTIVE,
+                now,
+                now,
+                expiresAt,
+                null,
+                null
+        );
+    }
+
+    public static Session rehydrate(
+            String id,
+            Long userId,
+            DeviceInfo deviceInfo,
+            GeoLocation location,
+            String ipAddress,
+            String userAgent,
+            SessionStatus sessionStatus,
+            Instant createdAt,
+            Instant lastActiveAt,
+            Instant expiredAt,
+            Instant revokedAt,
+            RevokedReason revokedReason
+    ) {
+        return new Session(
+                id,
+                userId,
+                deviceInfo,
+                location,
+                ipAddress,
+                userAgent,
+                sessionStatus,
+                createdAt,
+                lastActiveAt,
+                expiredAt,
+                revokedAt,
+                revokedReason
+        );
+    }
+
     public void revoke(RevokedReason reason) {
-        if (sessionStatus != SessionStatus.ACTIVE) return;
+        if (sessionStatus != SessionStatus.ACTIVE) {
+            return;
+        }
+        if (reason == null) {
+            throw new IllegalArgumentException("revokedReason must not be null");
+        }
+
         this.sessionStatus = SessionStatus.REVOKED;
         this.revokedAt = Instant.now();
         this.revokedReason = reason;
     }
 
-    /**
-     * Marks the session as expired (cleanup job).
-     */
     public void markExpired() {
-        if (sessionStatus != SessionStatus.ACTIVE) return;
+        if (sessionStatus != SessionStatus.ACTIVE) {
+            return;
+        }
+
         this.sessionStatus = SessionStatus.EXPIRED;
         this.revokedReason = RevokedReason.EXPIRED;
     }
 
-    /**
-     * Updates last_active for every request with a valid token.
-     */
     public void touch() {
+        if (sessionStatus != SessionStatus.ACTIVE) {
+            return;
+        }
+
         this.lastActiveAt = Instant.now();
     }
 
-    /**
-     * Checks if the session is still active / usable.
-     */
     public boolean isActive() {
-        return this.sessionStatus == SessionStatus.ACTIVE
-                && this.expiredAt != null
-                && this.expiredAt.isAfter(Instant.now());
+        return sessionStatus == SessionStatus.ACTIVE
+                && expiredAt != null
+                && expiredAt.isAfter(Instant.now());
     }
-
 }

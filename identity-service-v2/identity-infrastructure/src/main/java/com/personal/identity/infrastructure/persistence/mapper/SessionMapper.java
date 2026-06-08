@@ -32,11 +32,26 @@ public interface SessionMapper {
     /**
      * Entity → Domain. Must gather 6+5 flattened columns into 2 value objects.
      */
-    @Mapping(target = "deviceInfo", expression = "java(toDeviceInfo(entity))")
-    @Mapping(target = "location", expression = "java(toGeoLocation(entity))")
-    @Mapping(target = "ipAddress", source = "ipAddress")
-    @Mapping(target = "userAgent", source = "userAgent")
-    Session toDomain(SessionEntity entity);
+    default Session toDomain(SessionEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        return Session.rehydrate(
+                entity.getId(),
+                entity.getUserId(),
+                toDeviceInfo(entity),
+                toGeoLocation(entity),
+                entity.getIpAddress(),
+                entity.getUserAgent(),
+                entity.getSessionStatus(),
+                entity.getCreatedAt(),
+                entity.getLastActiveAt(),
+                entity.getExpiresAt(),
+                entity.getRevokedAt(),
+                entity.getRevokedReason()
+        );
+    }
 
     /**
      * Domain → Entity, used for CREATE. Must flatten DeviceInfo + GeoLocation.
@@ -49,7 +64,7 @@ public interface SessionMapper {
     @Mapping(target = "sessionStatus", source = "sessionStatus")
     @Mapping(target = "createdAt", source = "createdAt")
     @Mapping(target = "lastActiveAt", source = "lastActiveAt")
-    @Mapping(target = "expiresAt", source = "expiresAt")
+    @Mapping(target = "expiresAt", source = "expiredAt")
     @Mapping(target = "revokedAt", source = "revokedAt")
     @Mapping(target = "revokedReason", source = "revokedReason")
     // DeviceInfo flatten
@@ -74,7 +89,7 @@ public interface SessionMapper {
     @BeanMapping(ignoreByDefault = true, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "sessionStatus", source = "sessionStatus")
     @Mapping(target = "lastActiveAt", source = "lastActiveAt")
-    @Mapping(target = "expiresAt", source = "expiresAt")
+    @Mapping(target = "expiresAt", source = "expiredAt")
     @Mapping(target = "revokedAt", source = "revokedAt")
     @Mapping(target = "revokedReason", source = "revokedReason")
     void updateEntity(Session domain, @MappingTarget SessionEntity entity);

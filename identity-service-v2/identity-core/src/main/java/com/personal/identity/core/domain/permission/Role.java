@@ -53,7 +53,7 @@ public class Role {
         if (Objects.isNull(roleName) || roleName.isBlank()) {
             throw new IllegalArgumentException("roleName must not be blank");
         }
-        return new Role(null, roleCode, roleCode, description, new HashSet<>(), null, null);
+        return new Role(null, roleCode, roleName, description, new HashSet<>(), null, null);
     }
 
     public static Role rehydrate(Long id,
