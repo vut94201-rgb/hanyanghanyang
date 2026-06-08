@@ -3,6 +3,8 @@ package com.personal.identity.core.domain.shared.exception;
 import lombok.Getter;
 
 import java.io.Serial;
+import java.util.Objects;
+
 /**
  * Base for ALL exceptions arising from domain business logic.
  *
@@ -26,18 +28,27 @@ import java.io.Serial;
  */
 @Getter
 public abstract class DomainException extends RuntimeException {
-  @Serial
-  private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-  private final ErrorCode errorCode;
+    private final ErrorCode errorCode;
 
-  protected DomainException(ErrorCode errorCode, String message) {
-    super(message);
-    this.errorCode = errorCode;
-  }
+    protected DomainException(ErrorCode errorCode) {
+        super(errorCode.getDefaultMessage());
+        this.errorCode = requireErrorCode(errorCode);
+    }
 
-  protected DomainException(ErrorCode errorCode, String message, Throwable cause) {
-    super(message, cause);
-    this.errorCode = errorCode;
-  }
+    protected DomainException(ErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = requireErrorCode(errorCode);
+    }
+
+    protected DomainException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = requireErrorCode(errorCode);
+    }
+
+    private static ErrorCode requireErrorCode(ErrorCode errorCode) {
+        return Objects.requireNonNull(errorCode, "errorCode must not be null");
+    }
 }
