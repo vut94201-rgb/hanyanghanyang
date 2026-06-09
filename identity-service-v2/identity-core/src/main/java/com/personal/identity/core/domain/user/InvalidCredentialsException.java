@@ -17,14 +17,14 @@ import com.personal.identity.core.domain.shared.exception.ErrorCode;
  * NEVER "user not found" or "wrong password". The frontend must also
  * display this message, making no distinction between the two cases.
  */
-public class InvalidCredentialException extends DomainException {
+public class InvalidCredentialsException extends DomainException {
     private static final ErrorCode ERROR_CODE = ErrorCode.AUTH_INVALID_CREDENTIALS;
 
-    public InvalidCredentialException(String message) {
+    public InvalidCredentialsException(String message) {
         super(ERROR_CODE, message);
     }
 
-    public InvalidCredentialException() {
+    public InvalidCredentialsException() {
         super(ERROR_CODE);
     }
 }

@@ -1,6 +1,9 @@
 package com.personal.identity.infrastructure.security.jwt;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * Binds the configuration namespace {@code app.jwt.*} from {@code application.yml}.
@@ -33,11 +36,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param secret                Base64-encoded secret >= 256 bits for HS256 signatures.
  * @param issuer                The {@code iss} claim — helps verify the token originates from the correct trusted source.
  */
+@Validated
 @ConfigurationProperties("app.jwt")
 public record JwtProperties(
-        String secret,
-        String issuer,
-        long accessTokenTtlMinutes,
-        long refreshTokenTtlDays
+        @NotBlank String secret,
+        @NotBlank String issuer,
+        @Positive long accessTokenTtlMinutes,
+        @Positive long refreshTokenTtlDays
 ) {
 }

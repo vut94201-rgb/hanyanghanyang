@@ -94,6 +94,14 @@ public class JwtTokenProviderAdapter implements TokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
 
+            if (Objects.isNull(jwtClaims.getSubject())
+                    || Objects.isNull(jwtClaims.getIssuedAt())
+                    || Objects.isNull(jwtClaims.getExpiration())
+                    || Objects.isNull(jwtClaims.get(CLAIM_SESSION_ID, String.class))
+            ) {
+                return Optional.empty();
+            }
+
             return Optional.of(toTokenClaims(jwtClaims));
 
         } catch (JwtException e) {
