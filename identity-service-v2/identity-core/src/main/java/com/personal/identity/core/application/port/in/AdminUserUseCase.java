@@ -44,20 +44,20 @@ public class AdminUserUseCase {
     private final RoleRepository roleRepository;
     private final SessionRepository sessionRepository;
     private final AuditLogRepository auditLogRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+
 
     public AdminUserUseCase(
             UserRepository userRepository,
             RoleRepository roleRepository,
             SessionRepository sessionRepository,
-            AuditLogRepository auditLogRepository,
-            RefreshTokenRepository refreshTokenRepository
+            AuditLogRepository auditLogRepository
+
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.sessionRepository = sessionRepository;
         this.auditLogRepository = auditLogRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
+
     }
     // ------------------------------------------------------------------
     // Query
