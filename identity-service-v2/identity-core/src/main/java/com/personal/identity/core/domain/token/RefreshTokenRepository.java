@@ -7,6 +7,8 @@ import java.util.Optional;
  * <b>PORT</b> for RefreshToken persistence.
  */
 public interface RefreshTokenRepository {
+    RefreshToken save(RefreshToken refreshToken);
+
     /**
      * Lookup by hash - this is the ONLY way to find a token (never lookup by plain text).
      */

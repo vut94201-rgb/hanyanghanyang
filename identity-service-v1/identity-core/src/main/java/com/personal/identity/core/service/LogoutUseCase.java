@@ -45,7 +45,7 @@ import java.util.Optional;
  * "Logout from all devices" là use case khác (chưa làm) - sẽ dùng
  * {@code sessionRepository.revokeAllOtherSessions()} hoặc revoke hết bao gồm cả current.
  */
-public class LogoutUseCase {
+    public class LogoutUseCase {
 
     private final TokenProvider tokenProvider;
     private final SessionRepository sessionRepository;

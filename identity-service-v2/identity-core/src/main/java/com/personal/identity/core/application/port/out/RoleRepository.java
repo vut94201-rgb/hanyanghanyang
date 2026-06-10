@@ -1,4 +1,6 @@
-package com.personal.identity.core.domain.permission;
+package com.personal.identity.core.application.port.out;
+
+import com.personal.identity.core.domain.permission.Role;
 
 import java.util.List;
 import java.util.Optional;

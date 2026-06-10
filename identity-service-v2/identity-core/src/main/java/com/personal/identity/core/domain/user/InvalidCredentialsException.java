@@ -18,13 +18,13 @@ import com.personal.identity.core.domain.shared.exception.ErrorCode;
  * display this message, making no distinction between the two cases.
  */
 public class InvalidCredentialsException extends DomainException {
-    private static final ErrorCode ERROR_CODE = ErrorCode.AUTH_INVALID_CREDENTIALS;
+
 
     public InvalidCredentialsException(String message) {
-        super(ERROR_CODE, message);
+        super(ErrorCode.AUTH_INVALID_CREDENTIALS, message);
     }
 
     public InvalidCredentialsException() {
-        super(ERROR_CODE);
+        super(ErrorCode.AUTH_INVALID_CREDENTIALS);
     }
 }

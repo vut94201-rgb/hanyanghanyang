@@ -2,7 +2,7 @@ package com.personal.identity.infrastructure.persistence.adapter;
 
 import com.personal.identity.core.domain.session.RevokedReason;
 import com.personal.identity.core.domain.session.Session;
-import com.personal.identity.core.domain.session.SessionRepository;
+import com.personal.identity.core.application.port.out.SessionRepository;
 import com.personal.identity.core.domain.session.SessionStatus;
 import com.personal.identity.infrastructure.persistence.entity.SessionEntity;
 import com.personal.identity.infrastructure.persistence.mapper.SessionMapper;

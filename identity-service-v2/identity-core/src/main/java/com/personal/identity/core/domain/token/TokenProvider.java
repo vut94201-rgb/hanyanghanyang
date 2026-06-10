@@ -24,5 +24,5 @@ public interface TokenProvider {
      * - The token has expired, OR
      * - The format is invalid.
      */
-    Optional<TokenClaims> parseAndVerify(String tokenId);
+    Optional<TokenClaims> parseAndVerify(String token);
 }

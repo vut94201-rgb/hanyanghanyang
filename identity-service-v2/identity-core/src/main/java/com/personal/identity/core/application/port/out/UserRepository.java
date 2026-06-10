@@ -1,4 +1,7 @@
-package com.personal.identity.core.domain.user;
+package com.personal.identity.core.application.port.out;
+
+import com.personal.identity.core.domain.user.User;
+import com.personal.identity.core.domain.user.UserStatus;
 
 import java.util.List;
 import java.util.Optional;

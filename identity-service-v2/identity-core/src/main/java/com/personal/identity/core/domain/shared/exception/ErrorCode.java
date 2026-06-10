@@ -19,7 +19,10 @@ public enum ErrorCode {
     SESSION_NOT_FOUND("SESSION_NOT_FOUND", "Session not found"),
 
     ROLE_NOT_FOUND("ROLE_NOT_FOUND", "Role not found"),
-    PERMISSION_DENIED("PERMISSION_DENIED", "Permission denied");
+    PERMISSION_DENIED("PERMISSION_DENIED", "Permission denied"),
+
+
+    PASSWORD_SAME_AS_CURRENT("PASSWORD_SAME_AS_CURRENT", "New password must differ from current password");
 
 
     private final String code;

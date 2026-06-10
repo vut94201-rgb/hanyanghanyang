@@ -2,6 +2,7 @@ package com.personal.identity.bootstrap;
 
 
 import com.personal.identity.infrastructure.ratelimit.RateLimitProperties;
+import com.personal.identity.infrastructure.security.jwt.JwtProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -15,8 +16,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackages = "com.personal.identity.infrastructure.persistence.repository")
 @EnableConfigurationProperties({
         RateLimitProperties.class,
-        DataRedisProperties.class
+        DataRedisProperties.class,
+
 })
+@ConfigurationPropertiesScan(basePackages = "com.personal.identity")
 
 public class IdentityBootstrapApplication {
 

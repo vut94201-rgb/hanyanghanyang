@@ -1,6 +1,6 @@
 package com.personal.identity.api.observability;
 
-import com.personal.identity.core.domain.session.SessionRepository;
+import com.personal.identity.core.application.port.out.SessionRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;

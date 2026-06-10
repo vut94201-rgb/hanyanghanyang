@@ -1,4 +1,7 @@
-package com.personal.identity.core.domain.session;
+package com.personal.identity.core.application.port.out;
+
+import com.personal.identity.core.domain.session.RevokedReason;
+import com.personal.identity.core.domain.session.Session;
 
 import java.util.List;
 import java.util.Optional;
