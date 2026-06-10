@@ -23,6 +23,9 @@ public class InvalidRefreshTokenException extends DomainException {
     }
 
     public InvalidRefreshTokenException(String message) {
-        super(ERROR_CODE, message);
+        super(
+                ERROR_CODE,
+                "Invalid refresh token: " + message
+        );
     }
 }

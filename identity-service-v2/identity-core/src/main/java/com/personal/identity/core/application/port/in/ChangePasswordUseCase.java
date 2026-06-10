@@ -3,6 +3,7 @@ package com.personal.identity.core.application.port.in;
 import com.personal.identity.core.application.port.out.SessionRepository;
 import com.personal.identity.core.application.port.out.UserRepository;
 import com.personal.identity.core.application.security.PasswordEncoder;
+import com.personal.identity.core.domain.session.RevokedReason;
 import com.personal.identity.core.domain.token.RefreshTokenRepository;
 import com.personal.identity.core.domain.user.InvalidCredentialsException;
 import com.personal.identity.core.domain.user.PasswordSameAsCurrentException;
@@ -98,6 +99,25 @@ public class ChangePasswordUseCase {
         )) {
             throw new PasswordSameAsCurrentException();
         }
+
+        // 4. Hash and save
+        String newHash = passwordEncoder.encode(command.newPassword);
+        currentUser.changePassword(newHash);
+        userRepository.save(currentUser);
+
+        // 5. Revoke ALL OTHER sessions (excluding the current one) - severing access across
+        //    all other devices. The current session is preserved so the current user does not to re-login
+        //    immediately on the tab they are currently  using to change password.
+        //
+        //    Bulk operation: the refresh token tied to those session will either be cleaned up
+        //    asynchronously by a background clean up job, or a dedicated service could explicitly  invoke
+        //    revokeAllOtherSessions for each  session - but we prioritize simplicity here.
+        sessionRepository.revokeAllOtherSessions(
+                currentUser.getId(),
+                command.currentSessionId,
+                RevokedReason.USER_ACTION
+        );
+
     }
 
     private void validateInput(ChangePasswordCommand changePasswordCommand) {

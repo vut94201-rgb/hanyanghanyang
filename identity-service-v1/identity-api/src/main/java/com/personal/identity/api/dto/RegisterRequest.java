@@ -24,7 +24,7 @@ import jakarta.validation.constraints.Size;
  * thực ra làm password yếu hơn (user tạo "Password1!" thay vì passphrase dài).
  * Nếu yêu cầu strict, thêm @Pattern sau, nhưng đừng bắt buộc cho MVP.
  */
-public record RegisterRequest(
+        public record RegisterRequest(
 
         @NotBlank
         @Size(min = 3, max = 50)
