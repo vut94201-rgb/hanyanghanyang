@@ -1,4 +1,4 @@
-package com.personal.identity.api.security.config;
+package com.personal.identity.bootstrap.config;
 
 import com.personal.identity.core.application.port.in.*;
 import com.personal.identity.core.application.port.out.RoleRepository;
@@ -13,6 +13,7 @@ import com.personal.identity.core.domain.token.AccessTokenBlacklist;
 import com.personal.identity.core.domain.token.RefreshTokenRepository;
 import com.personal.identity.core.domain.token.TokenProvider;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * Wires the core domain use cases (pure Java) into managed Spring beans.
@@ -47,6 +48,7 @@ import org.springframework.context.annotation.Bean;
  * Meanwhile, Spring Security's internal {@code PasswordEncoder} bean defined inside the {@code SecurityConfig} class belongs
  * to a distinct package namespace, ensuring the two beans never collide or cause bean mixing bugs.
  */
+@Configuration
 public class UseCaseConfig {
 
 

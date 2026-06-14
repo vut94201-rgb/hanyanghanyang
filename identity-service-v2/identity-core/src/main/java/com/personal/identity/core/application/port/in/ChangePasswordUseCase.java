@@ -127,13 +127,13 @@ public class ChangePasswordUseCase {
         if (Objects.isNull(changePasswordCommand.userId)) {
             throw new IllegalArgumentException("userId must  not be null");
         }
-        if (Objects.isNull(changePasswordCommand.currentSessionId) || StringUtils.hasText(changePasswordCommand.currentSessionId)) {
+        if (!StringUtils.hasText(changePasswordCommand.currentSessionId)) {
             throw new IllegalArgumentException("currentSessionId must  not be null");
         }
-        if (Objects.isNull(changePasswordCommand.currentPassword) || StringUtils.hasText(changePasswordCommand.currentPassword)) {
+        if (!StringUtils.hasText(changePasswordCommand.currentPassword)) {
             throw new IllegalArgumentException("currentPassword must  not be null");
         }
-        if (Objects.isNull(changePasswordCommand.newPassword) || StringUtils.hasText(changePasswordCommand.newPassword)) {
+        if (!StringUtils.hasText(changePasswordCommand.newPassword)) {
             throw new IllegalArgumentException("newPassword must  not be null");
         }
     }

@@ -228,7 +228,7 @@ public class AdminUserUseCase {
         }
         User savedUser = userRepository.save(targetUser);
         List<Session> activeSessions = sessionRepository.findActiveByUserId(savedUser.getId());
-        activeSessions.stream().peek(session -> {
+        activeSessions.forEach(session -> {
             session.revoke(revokedReason);
             sessionRepository.save(session);
         });

@@ -40,8 +40,8 @@ public class RefreshTokenEntity {
     @Column(name = "token_hash", length = 128, nullable = false, unique = true)
     private String tokenHash;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "token_status", nullable = false, length = 20)
+
+    @Column(name = "token_status")
     private RefreshTokenStatus tokenStatus;
 
     @Column(name = "created_at", nullable = false)

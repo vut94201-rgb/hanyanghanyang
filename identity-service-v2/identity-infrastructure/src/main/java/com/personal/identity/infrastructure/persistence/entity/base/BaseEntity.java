@@ -2,9 +2,10 @@ package com.personal.identity.infrastructure.persistence.entity.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Version;
+
 
 import java.io.Serializable;
 import java.util.Objects;

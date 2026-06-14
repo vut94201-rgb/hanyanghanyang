@@ -5,8 +5,9 @@ import com.personal.identity.core.domain.session.Session;
 import com.personal.identity.core.application.port.out.SessionRepository;
 import com.personal.identity.core.domain.session.SessionStatus;
 import com.personal.identity.infrastructure.persistence.entity.SessionEntity;
+import com.personal.identity.infrastructure.persistence.jpa.SessionJpaRepository;
 import com.personal.identity.infrastructure.persistence.mapper.SessionMapper;
-import com.personal.identity.infrastructure.persistence.repository.SessionJpaRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;

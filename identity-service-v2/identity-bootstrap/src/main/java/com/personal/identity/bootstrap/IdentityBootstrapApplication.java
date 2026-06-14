@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = "com.personal.identity")
 @EntityScan(basePackages = "com.personal.identity.infrastructure.persistence.entity")
-@EnableJpaRepositories(basePackages = "com.personal.identity.infrastructure.persistence.repository")
+@EnableJpaRepositories(basePackages = "com.personal.identity.infrastructure.persistence.jpa")
 @EnableConfigurationProperties({
         RateLimitProperties.class,
         DataRedisProperties.class,

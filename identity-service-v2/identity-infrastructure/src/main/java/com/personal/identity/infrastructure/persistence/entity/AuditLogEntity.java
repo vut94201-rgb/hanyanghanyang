@@ -51,8 +51,8 @@ public class AuditLogEntity {
     @Column(name = "target_username", length = 64)
     private String targetUsername;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "action_type", nullable = false, length = 64)
+
+    @Column(name = "action_type")
     private AdminAction actionType;
 
     @Lob
@@ -62,8 +62,7 @@ public class AuditLogEntity {
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "outcome", nullable = false, length = 16)
+    @Column(name = "outcome")
     private AdminAuditEvent.Outcome outcome;
 
     @Column(name = "error_message", length = 500)

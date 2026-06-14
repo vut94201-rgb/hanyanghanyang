@@ -63,8 +63,8 @@ public class UserEntity extends SoftDeletableAuditableEntity<Long> {
     @Column(name = "full_name", length = 150)
     private String fullName;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "account_status", nullable = false, length = 20)
+
+    @Column(name = "account_status", nullable = false)
     private UserStatus accountStatus;
 
     /** Roles - permission source 1 (RBAC). */

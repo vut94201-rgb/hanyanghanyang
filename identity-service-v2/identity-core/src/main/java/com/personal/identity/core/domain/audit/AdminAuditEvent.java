@@ -30,9 +30,20 @@ public record AdminAuditEvent(
         String errorMessage,
         Instant createdAt
 ) {
-    public enum Outcome {
-        SUCCESS,
-        FAILURE
+    public enum Outcome implements com.personal.identity.core.domain.shared.enums.CodeEnum<String> {
+        SUCCESS("S"),
+        FAILURE("F");
+
+        private final String code;
+
+        Outcome(String code) {
+            this.code = code;
+        }
+
+        @Override
+        public String getCode() {
+            return code;
+        }
     }
 
     /**
